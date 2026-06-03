@@ -82,31 +82,25 @@ a:hover {
 }
 
 /* ----------------------------------------------------------------------------
-   ギャラリー画像（商品詳細）
-   写真は実寸がバラバラなので、Bootstrap のカラム幅に引き伸ばさない。
-   各画像は元サイズ（最大でも枠内）で中央表示し、横に並べて折り返す。
+   ギャラリー画像（商品詳細）＝縦のリスト
+   各 .gallery-item には PHP 側で実寸の横幅が max-width として付く。
+   これにより画像は「元サイズ以上に拡大されない」。画面が狭いときだけ縮小。
 ---------------------------------------------------------------------------- */
 .gallery {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .75rem;
+    display: block;
 }
 .gallery-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1 1 280px;              /* 基本は2〜3列、画面に応じて折り返し */
-    max-width: 100%;
+    display: block;
+    max-width: 100%;             /* PHP の inline max-width(実寸) と併用。狭い画面では縮小 */
+    margin-bottom: .75rem;
     background-color: #0c0c0c;
     border: 1px solid #333;
     padding: .35rem;
 }
 .gallery-item img {
     display: block;
-    width: auto;
+    width: 100%;                 /* 枠（=実寸上限）いっぱい。実寸を超えることはない */
     height: auto;
-    max-width: 100%;             /* 横は枠を超えない */
-    max-height: 340px;           /* 縦は上限のみ。小さい画像は等倍のまま */
 }
 
 /* 拡大モーダルの画像も実寸を超えて拡大しない */

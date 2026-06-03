@@ -23,6 +23,21 @@ if (!$product) {
 }
 
 $imgBase = SITE_BASE . rtrim($product['image_dir'], '/') . '/';
+// 画像ファイルの実体パス（実寸を調べるために使う）。
+$fsBase  = __DIR__ . '/../' . rtrim($product['image_dir'], '/') . '/';
+
+/**
+ * 画像の実寸（横幅px）を返す。取得できなければ 0。
+ * 取得できた場合、その横幅を上限にすることで「元サイズより拡大しない」を保証する。
+ */
+function image_width(string $path): int
+{
+    if (!is_file($path)) {
+        return 0;
+    }
+    $size = @getimagesize($path);
+    return $size ? (int) $size[0] : 0;
+}
 
 layout_header($product['name']);
 ?>
@@ -40,13 +55,19 @@ layout_header($product['name']);
     <p class="text-secondary"><?= e($product['notes']) ?></p>
 <?php endif; ?>
 
-<!-- 画像ギャラリー：写真は実寸で中央表示し、画面幅に応じて折り返す。
-     小さい画像を引き伸ばさない（拡大しない）のがポイント。
+<!-- 画像ギャラリー（縦のリスト）。
+     各画像の実寸を getimagesize() で調べ、その横幅を上限にする。
+     これにより小さい画像が引き伸ばされることはなく、画面が狭いときだけ縮小される。
      クリックでモーダル（ライトボックス）に拡大画像を表示する。 -->
 <div class="gallery mb-4">
     <?php foreach ($product['images'] as $i => $img): ?>
-        <?php $large = $product['images_large'][$i] ?? $img; ?>
-        <a class="gallery-item" href="<?= e($imgBase . $large) ?>"
+        <?php
+            $large = $product['images_large'][$i] ?? $img;
+            $w     = image_width($fsBase . $img);
+            // 実寸が取れたらその幅を上限に（枠の余白ぶんを少し加味）。取れなければ上限なし。
+            $style = $w > 0 ? ' style="max-width:' . ($w + 12) . 'px"' : '';
+        ?>
+        <a class="gallery-item"<?= $style ?> href="<?= e($imgBase . $large) ?>"
            data-bs-toggle="modal" data-bs-target="#imgModal"
            data-img="<?= e($imgBase . $large) ?>">
             <img src="<?= e($imgBase . $img) ?>" alt="<?= e($product['name']) ?>" loading="lazy">
