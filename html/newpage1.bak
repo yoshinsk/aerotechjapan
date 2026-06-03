@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0039)http://www.aero-tech.co.jp/newpage1.htm -->
+<HTML><HEAD><TITLE></TITLE>
+<META content="text/html; charset=shift_jis" http-equiv=Content-Type>
+<META content="IBM HomePage Builder 2001 V5.0.0 for Windows" name="GENERATOR"></HEAD>
+<BODY aLink=#ff9999 background=newpage1.files/y6b.gif bgColor=#ffffcc 
+link=#cc0000 text=#000000 vLink=#666666>
+<P align=center><B><FONT size=+2><U>お見積り・問い合わせ</U></FONT></B></P>
+<BLOCKQUOTE><BR><BR><FONT 
+  size=-1><B>こちらのフォームに必須事項をご記入の上、返送お願い致します。<BR>
+見積り金額及び、納期を返信致します。<BR>
+返信されたメールをお読み頂き、注文でよろしければ、下記へお振込み下さい。<BR>
+入金を確認後、品物をお送り致します。（入金後２、３日）<BR>
+（尚、代金引換は別途手数料がかかります）</B></FONT><BR><BR><B>
+<FONTcolor=#0000ccsize=+1>振込み先：近畿大坂銀行　寝屋川支店（普）０８０４５１４　<BR>
+株）エアロテックジャパン</B></BLOCKQUOTE>
+<BLOCKQUOTE><BR><BR><IMG border=0 height=12 src="newpage1.files/b_lin009.gif" 
+  width=703><BR><FORM METHOD="POST" ACTION="/cgi-bin/form2mail.cgi">
+<TABLE border="1" height="490">
+  <TBODY>
+    <TR>
+      <TD width="204" height="26"><INPUT type="HIDDEN" name="F2M_NO" value="1">お客様の会社名（お名前）</TD>
+      <TD width="461" height="26"><INPUT type="TEXT" name="NAME" size="36"></TD>
+    </TR>
+    <TR>
+      <TD width="204" height="28">TEL番号</TD>
+      <TD width="461" height="28"><INPUT type="TEXT" name="TEL" size="36"></TD>
+    </TR>
+    <TR>
+      <TD width="204" height="27">FAX番号 </TD>
+      <TD width="461" height="27"><TEXTAREA name="COMMENT" rows="1" cols="35"></TEXTAREA></TD>
+    </TR>
+    <TR>
+      <TD width="204" height="76">ご住所　</TD>
+      <TD width="461" height="76"><TEXTAREA name="COMMENT" rows="6" cols="65"></TEXTAREA></TD>
+    </TR>
+    <TR>
+      <TD width="204" height="28">メールアドレス</TD>
+      <TD width="461" height="28"><INPUT type="TEXT" name="MAIL" size="45"></TD>
+    </TR>
+    <TR>
+      <TD width="204" height="32">車種名　</TD>
+      <TD width="461" height="32"><INPUT type="TEXT" name="CAR" size="45"></TD>
+    </TR>
+    <TR>
+      <TD width="204" height="110">ご購入パーツ・個数</TD>
+      <TD width="461" height="110"><TEXTAREA name="COMMENT" rows="6" cols="68"></TEXTAREA></TD>
+    </TR>
+    <TR>
+      <TD width="204" height="93">問い合わせ</TD>
+      <TD width="461" height="93"><TEXTAREA name="COMMENT" rows="6" cols="68"></TEXTAREA></TD>
+    </TR>
+  </TBODY>
+</TABLE> <INPUT TYPE="HIDDEN" NAME="F2M_NO" VALUE="1"><BR> 　　<INPUT TYPE="SUBMIT" VALUE="送　信"> 　　<INPUT TYPE="RESET" VALUE="クリア"></FORM></BLOCKQUOTE></BODY></HTML>
