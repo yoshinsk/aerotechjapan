@@ -40,18 +40,17 @@ layout_header($product['name']);
     <p class="text-secondary"><?= e($product['notes']) ?></p>
 <?php endif; ?>
 
-<!-- 画像ギャラリー：PC では2列、スマホでは1列に自動で並ぶ。
+<!-- 画像ギャラリー：写真は実寸で中央表示し、画面幅に応じて折り返す。
+     小さい画像を引き伸ばさない（拡大しない）のがポイント。
      クリックでモーダル（ライトボックス）に拡大画像を表示する。 -->
-<div class="row g-3 gallery mb-4">
+<div class="gallery mb-4">
     <?php foreach ($product['images'] as $i => $img): ?>
         <?php $large = $product['images_large'][$i] ?? $img; ?>
-        <div class="col-12 col-md-6">
-            <a href="<?= e($imgBase . $large) ?>"
-               data-bs-toggle="modal" data-bs-target="#imgModal"
-               data-img="<?= e($imgBase . $large) ?>">
-                <img src="<?= e($imgBase . $img) ?>" alt="<?= e($product['name']) ?>" loading="lazy">
-            </a>
-        </div>
+        <a class="gallery-item" href="<?= e($imgBase . $large) ?>"
+           data-bs-toggle="modal" data-bs-target="#imgModal"
+           data-img="<?= e($imgBase . $large) ?>">
+            <img src="<?= e($imgBase . $img) ?>" alt="<?= e($product['name']) ?>" loading="lazy">
+        </a>
     <?php endforeach; ?>
 </div>
 

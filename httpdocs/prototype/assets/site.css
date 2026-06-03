@@ -68,11 +68,53 @@ a:hover {
     vertical-align: middle;
 }
 
-/* ギャラリー画像 */
-.gallery img {
-    width: 100%;
-    height: auto;
+/* ----------------------------------------------------------------------------
+   商品カードのサムネイル
+   旧サイトの写真はサイズがまちまち（小さい画像も多い）ため、
+   object-fit: scale-down で「元サイズより拡大しない」ようにする。
+   小さい画像は中央に等倍表示、大きい画像だけ枠に収まるよう縮小される。
+---------------------------------------------------------------------------- */
+.card-img-top {
+    height: 180px;
+    object-fit: scale-down;       /* 拡大せず、はみ出す分だけ縮小 */
+    background-color: #0c0c0c;
+    padding: .25rem;
+}
+
+/* ----------------------------------------------------------------------------
+   ギャラリー画像（商品詳細）
+   写真は実寸がバラバラなので、Bootstrap のカラム幅に引き伸ばさない。
+   各画像は元サイズ（最大でも枠内）で中央表示し、横に並べて折り返す。
+---------------------------------------------------------------------------- */
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+.gallery-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 280px;              /* 基本は2〜3列、画面に応じて折り返し */
+    max-width: 100%;
+    background-color: #0c0c0c;
     border: 1px solid #333;
+    padding: .35rem;
+}
+.gallery-item img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;             /* 横は枠を超えない */
+    max-height: 340px;           /* 縦は上限のみ。小さい画像は等倍のまま */
+}
+
+/* 拡大モーダルの画像も実寸を超えて拡大しない */
+#imgModalTarget {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 85vh;
 }
 
 footer {
