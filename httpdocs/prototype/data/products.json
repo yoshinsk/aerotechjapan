@@ -1,0 +1,33 @@
+{
+    "GUN125_HILUX_GR_SPORT": {
+        "slug": "GUN125_HILUX_GR_SPORT",
+        "name": "GUN125 HILUX GR SPORT",
+        "model_year": "(2021/10〜)",
+        "category": "乱人 / RANDO",
+        "image_dir": "garage-img/GUN125_HILUX_GR_SPORT",
+        "images": [
+            "GUN125_HILUX_GR_SPORT-01.jpg",
+            "GUN125_HILUX_GR_SPORT-02.jpg",
+            "GUN125_HILUX_GR_SPORT-03.jpg",
+            "GUN125_HILUX_GR_SPORT-04.jpg",
+            "GUN125_HILUX_GR_SPORT-05.jpg",
+            "GUN125_HILUX_GR_SPORT-06.jpg",
+            "GUN125_HILUX_GR_SPORT-07.jpg",
+            "GUN125_HILUX_GR_SPORT-08.jpg",
+            "GUN125_HILUX_GR_SPORT-09.jpg",
+            "GUN125_HILUX_GR_SPORT-10.jpg",
+            "GUN125_HILUX_GR_SPORT-11.jpg",
+            "GUN125_HILUX_GR_SPORT-12.jpg",
+            "GUN125_HILUX_GR_SPORT-13.jpg",
+            "GUN125_HILUX_GR_SPORT-14.jpg"
+        ],
+        "specs": [
+            { "label": "DEMOCAR Grade", "value": "Z GR SPORT" },
+            { "label": "FOOTWORK", "value": "【RS★R】Best★i 車高調" },
+            { "label": "WHEEL", "value": "" },
+            { "label": "TIRE", "value": "" },
+            { "label": "EXHAUST", "value": "" }
+        ],
+        "notes": "GUN125 HILUX GR SPORT 専用 BODY KIT。画像をクリックすると拡大画像をご覧になれます。"
+    }
+}

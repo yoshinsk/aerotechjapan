@@ -1,0 +1,80 @@
+/* ----------------------------------------------------------------------------
+   試作版のデザイン調整。
+   旧サイトの雰囲気（黒背景・白文字・シアンのリンク）を踏襲する。
+   レイアウト自体は Bootstrap が担当し、ここでは色味と細部だけ上書きする。
+---------------------------------------------------------------------------- */
+
+body {
+    background-color: #000;
+    color: #fff;
+}
+
+a {
+    color: #99ffff;
+}
+a:hover {
+    color: #ccffff;
+}
+
+.navbar {
+    background-color: #111;
+}
+
+.brand-accent {
+    color: #ff3030;
+}
+
+/* 左サイドメニュー */
+.sidebar {
+    background-color: #0c0c0c;
+    border-right: 1px solid #333;
+}
+.sidebar-title {
+    font-size: 1rem;
+    letter-spacing: .1em;
+    color: #ccc;
+    border-bottom: 1px solid #444;
+    padding-bottom: .4rem;
+    margin-bottom: .6rem;
+}
+.sidebar .nav-link {
+    color: #ddd;
+    padding: .45rem .25rem;
+    border-bottom: 1px solid #1c1c1c;
+}
+.sidebar .nav-link:hover {
+    color: #99ffff;
+    background-color: #1a1a1a;
+}
+
+/* 商品見出し */
+.product-title {
+    font-weight: 700;
+}
+.product-year {
+    color: #aaa;
+}
+
+/* SPEC表 */
+.spec-table th {
+    width: 30%;
+    background-color: #1a1a1a;
+    color: #ddd;
+    white-space: nowrap;
+}
+.spec-table td,
+.spec-table th {
+    border-color: #444;
+    vertical-align: middle;
+}
+
+/* ギャラリー画像 */
+.gallery img {
+    width: 100%;
+    height: auto;
+    border: 1px solid #333;
+}
+
+footer {
+    color: #888;
+}
