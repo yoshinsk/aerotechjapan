@@ -10,19 +10,63 @@
 
 require_once __DIR__ . '/../config.php';
 
-/** 左サイドメニュー（旧 f-left.html の AERO PARTS カテゴリ相当） */
-function nav_categories(): array
+/** AERO PARTS の正式カテゴリ一覧（旧 f-left.html のメニュー定義に対応） */
+function canonical_categories(): array
 {
     return [
-        ['label' => '乱人 / RANDO',        'href' => '#'],
-        ['label' => '乱人 Black Edition',  'href' => '#'],
-        ['label' => 'DIRect',              'href' => '#'],
-        ['label' => 'AVANT',               'href' => '#'],
-        ['label' => 'RANDO Style',         'href' => '#'],
-        ['label' => 'RANDO SPORTS',        'href' => '#'],
-        ['label' => '乱人流 SPORTS',       'href' => '#'],
-        ['label' => 'Rando Ryu LUX',       'href' => '#'],
+        '乱人 / RANDO',
+        '乱人 Black Edition',
+        'DIRect',
+        'AVANT',
+        'RANDO Style',
+        'RANDO SPORTS',
+        '乱人流 SPORTS',
+        'Rando Ryu LUX',
     ];
+}
+
+/**
+ * 指定カテゴリに属する商品を返す。
+ * 商品の category は正式名を " / " で連結した文字列なので、
+ * 正式名が含まれているかどうかで判定する（"未分類" は完全一致）。
+ */
+function products_in_category(array $all, string $label): array
+{
+    if ($label === '未分類') {
+        return array_values(array_filter($all, fn($p) => ($p['category'] ?? '') === '未分類'));
+    }
+    return array_values(array_filter(
+        $all,
+        fn($p) => strpos((string) ($p['category'] ?? ''), $label) !== false
+    ));
+}
+
+/** 商品カード（一覧で再利用） */
+function render_product_card(array $p): void
+{
+    $thumb = '';
+    if (!empty($p['images'])) {
+        $thumb = SITE_BASE . rtrim($p['image_dir'], '/') . '/' . $p['images'][0];
+    }
+    ?>
+    <div class="col-12 col-sm-6 col-lg-4">
+        <div class="card bg-dark border-secondary h-100">
+            <?php if ($thumb): ?>
+                <a href="product.php?slug=<?= urlencode($p['slug']) ?>">
+                    <img src="<?= e($thumb) ?>" class="card-img-top" alt="<?= e($p['name']) ?>" loading="lazy">
+                </a>
+            <?php endif; ?>
+            <div class="card-body">
+                <h2 class="h6 card-title">
+                    <a href="product.php?slug=<?= urlencode($p['slug']) ?>" class="stretched-link text-decoration-none">
+                        <?= e($p['name']) ?>
+                    </a>
+                </h2>
+                <div class="text-secondary small"><?= e($p['model_year']) ?></div>
+            </div>
+        </div>
+    </div>
+    <?php
 }
 
 /** 上部メニュー（旧 f-top.html の横並びメニュー相当） */
@@ -44,7 +88,7 @@ function e(?string $s): string
     return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
 }
 
-function layout_header(string $title): void
+function layout_header(string $title, string $activeCat = ''): void
 {
     ?>
 <!DOCTYPE html>
@@ -84,11 +128,19 @@ function layout_header(string $title): void
         <aside class="col-lg-2 sidebar py-3">
             <h2 class="sidebar-title">AERO PARTS</h2>
             <ul class="nav flex-column">
-                <?php foreach (nav_categories() as $cat): ?>
+                <li class="nav-item">
+                    <a class="nav-link<?= $activeCat === '*' ? ' active' : '' ?>" href="index.php">すべて</a>
+                </li>
+                <?php foreach (canonical_categories() as $cat): ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= e($cat['href']) ?>"><?= e($cat['label']) ?></a>
+                        <a class="nav-link<?= $activeCat === $cat ? ' active' : '' ?>"
+                           href="category.php?cat=<?= urlencode($cat) ?>"><?= e($cat) ?></a>
                     </li>
                 <?php endforeach; ?>
+                <li class="nav-item">
+                    <a class="nav-link<?= $activeCat === '未分類' ? ' active' : '' ?>"
+                       href="category.php?cat=<?= urlencode('未分類') ?>">未分類</a>
+                </li>
             </ul>
         </aside>
 

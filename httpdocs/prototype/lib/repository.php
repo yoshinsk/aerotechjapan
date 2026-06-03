@@ -57,22 +57,24 @@ class ProductRepository
     public function save(array $product): void
     {
         if ($this->pdo) {
-            $sql = 'INSERT INTO products (slug, name, model_year, category, image_dir, images, specs, notes)
-                    VALUES (:slug, :name, :model_year, :category, :image_dir, :images, :specs, :notes)
+            $sql = 'INSERT INTO products (slug, name, model_year, category, image_dir, images, images_large, specs, notes)
+                    VALUES (:slug, :name, :model_year, :category, :image_dir, :images, :images_large, :specs, :notes)
                     ON DUPLICATE KEY UPDATE
                         name = VALUES(name), model_year = VALUES(model_year),
                         category = VALUES(category), image_dir = VALUES(image_dir),
-                        images = VALUES(images), specs = VALUES(specs), notes = VALUES(notes)';
+                        images = VALUES(images), images_large = VALUES(images_large),
+                        specs = VALUES(specs), notes = VALUES(notes)';
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
-                ':slug'       => $product['slug'],
-                ':name'       => $product['name'],
-                ':model_year' => $product['model_year'] ?? '',
-                ':category'   => $product['category'] ?? '',
-                ':image_dir'  => $product['image_dir'] ?? '',
-                ':images'     => json_encode($product['images'] ?? [], JSON_UNESCAPED_UNICODE),
-                ':specs'      => json_encode($product['specs'] ?? [], JSON_UNESCAPED_UNICODE),
-                ':notes'      => $product['notes'] ?? '',
+                ':slug'         => $product['slug'],
+                ':name'         => $product['name'],
+                ':model_year'   => $product['model_year'] ?? '',
+                ':category'     => $product['category'] ?? '',
+                ':image_dir'    => $product['image_dir'] ?? '',
+                ':images'       => json_encode($product['images'] ?? [], JSON_UNESCAPED_UNICODE),
+                ':images_large' => json_encode($product['images_large'] ?? [], JSON_UNESCAPED_UNICODE),
+                ':specs'        => json_encode($product['specs'] ?? [], JSON_UNESCAPED_UNICODE),
+                ':notes'        => $product['notes'] ?? '',
             ]);
             return;
         }
@@ -84,8 +86,9 @@ class ProductRepository
     /** DB の行（images/specs が JSON文字列）を配列に整形 */
     private function hydrate(array $row): array
     {
-        $row['images'] = json_decode($row['images'] ?? '[]', true) ?: [];
-        $row['specs']  = json_decode($row['specs'] ?? '[]', true) ?: [];
+        $row['images']       = json_decode($row['images'] ?? '[]', true) ?: [];
+        $row['images_large'] = json_decode($row['images_large'] ?? '[]', true) ?: [];
+        $row['specs']        = json_decode($row['specs'] ?? '[]', true) ?: [];
         return $row;
     }
 

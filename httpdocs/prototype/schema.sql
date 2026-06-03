@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS products (
     model_year  VARCHAR(255) NOT NULL DEFAULT '',           -- 適合年式（例: (2021/10〜)）
     category    VARCHAR(255) NOT NULL DEFAULT '',           -- ブランド/カテゴリ（乱人, DIRect 等）
     image_dir   VARCHAR(255) NOT NULL DEFAULT '',           -- 画像フォルダ（例: garage-img/GUN125_HILUX_GR_SPORT）
-    images      JSON         NULL,                          -- 画像ファイル名の配列
+    images      JSON         NULL,                          -- 表示画像ファイル名の配列
+    images_large JSON        NULL,                          -- 拡大画像ファイル名の配列（images と同じ並び）
     specs       JSON         NULL,                          -- SPEC行 [{label, value}, ...]
     notes       TEXT         NULL,                          -- 補足説明
     sort_order  INT          NOT NULL DEFAULT 0,            -- 並び順

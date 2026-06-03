@@ -1,47 +1,45 @@
 <?php
 /**
- * 試作版トップ（商品一覧）。
- * 登録済みの商品をカード形式で並べる。
+ * 試作版トップ。カテゴリ別に商品を一覧表示する。
  */
 
 require_once __DIR__ . '/lib/repository.php';
 require_once __DIR__ . '/templates/layout.php';
 
 $repo = new ProductRepository();
-$products = $repo->all();
+$all = $repo->all();
 
-layout_header('商品一覧（試作版）');
+// 表示順：正式カテゴリ → 最後に未分類
+$sections = [];
+foreach (canonical_categories() as $cat) {
+    $items = products_in_category($all, $cat);
+    if ($items) {
+        $sections[$cat] = $items;
+    }
+}
+$uncat = products_in_category($all, '未分類');
+if ($uncat) {
+    $sections['未分類'] = $uncat;
+}
+
+layout_header('商品一覧（試作版）', '*');
 ?>
 
-<h1 class="h4 mb-3">商品一覧 <span class="text-secondary small">（試作版）</span></h1>
+<h1 class="h4 mb-4">商品一覧 <span class="text-secondary small">（全 <?= count($all) ?> 商品 / 試作版）</span></h1>
 
-<div class="row g-3">
-    <?php foreach ($products as $p): ?>
-        <?php
-            $thumb = '';
-            if (!empty($p['images'])) {
-                $thumb = SITE_BASE . rtrim($p['image_dir'], '/') . '/' . $p['images'][0];
-            }
-        ?>
-        <div class="col-12 col-sm-6 col-lg-4">
-            <div class="card bg-dark border-secondary h-100">
-                <?php if ($thumb): ?>
-                    <a href="product.php?slug=<?= urlencode($p['slug']) ?>">
-                        <img src="<?= e($thumb) ?>" class="card-img-top" alt="<?= e($p['name']) ?>" loading="lazy">
-                    </a>
-                <?php endif; ?>
-                <div class="card-body">
-                    <h2 class="h6 card-title">
-                        <a href="product.php?slug=<?= urlencode($p['slug']) ?>" class="stretched-link text-decoration-none">
-                            <?= e($p['name']) ?>
-                        </a>
-                    </h2>
-                    <div class="text-secondary small"><?= e($p['model_year']) ?></div>
-                </div>
-            </div>
+<?php foreach ($sections as $cat => $items): ?>
+    <section class="mb-5">
+        <h2 class="h5 border-bottom border-secondary pb-2 d-flex justify-content-between">
+            <span><?= e($cat) ?></span>
+            <a class="small" href="category.php?cat=<?= urlencode($cat) ?>"><?= count($items) ?> 件 ›</a>
+        </h2>
+        <div class="row g-3">
+            <?php foreach (array_slice($items, 0, 6) as $p): ?>
+                <?php render_product_card($p); ?>
+            <?php endforeach; ?>
         </div>
-    <?php endforeach; ?>
-</div>
+    </section>
+<?php endforeach; ?>
 
 <?php
 layout_footer();

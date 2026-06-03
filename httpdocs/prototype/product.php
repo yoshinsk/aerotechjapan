@@ -40,16 +40,37 @@ layout_header($product['name']);
     <p class="text-secondary"><?= e($product['notes']) ?></p>
 <?php endif; ?>
 
-<!-- 画像ギャラリー：PC では2列、スマホでは1列に自動で並ぶ -->
+<!-- 画像ギャラリー：PC では2列、スマホでは1列に自動で並ぶ。
+     クリックでモーダル（ライトボックス）に拡大画像を表示する。 -->
 <div class="row g-3 gallery mb-4">
-    <?php foreach ($product['images'] as $img): ?>
+    <?php foreach ($product['images'] as $i => $img): ?>
+        <?php $large = $product['images_large'][$i] ?? $img; ?>
         <div class="col-12 col-md-6">
-            <a href="<?= e($imgBase . $img) ?>" target="_blank" rel="noopener">
+            <a href="<?= e($imgBase . $large) ?>"
+               data-bs-toggle="modal" data-bs-target="#imgModal"
+               data-img="<?= e($imgBase . $large) ?>">
                 <img src="<?= e($imgBase . $img) ?>" alt="<?= e($product['name']) ?>" loading="lazy">
             </a>
         </div>
     <?php endforeach; ?>
 </div>
+
+<!-- 拡大画像モーダル -->
+<div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-body p-0 text-center">
+                <img id="imgModalTarget" src="" alt="<?= e($product['name']) ?>" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('imgModal').addEventListener('show.bs.modal', function (ev) {
+    var src = ev.relatedTarget.getAttribute('data-img');
+    document.getElementById('imgModalTarget').src = src;
+});
+</script>
 
 <!-- SPEC表 -->
 <?php if (!empty($product['specs'])): ?>
