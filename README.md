@@ -3,6 +3,43 @@
 [www.aero-tech.co.jp](https://www.aero-tech.co.jp) として公開されている
 コーポレート／商品紹介サイトのソースです。公開ディレクトリは `httpdocs/` です。
 
+## 2026-07 リニューアルCMS
+
+新サイトは、旧プロトタイプとは別系統の **軽量な独自 PHP + MariaDB CMS** として
+`httpdocs/public/` を公開ディレクトリにして構築する。
+
+### 主要ディレクトリ
+
+| ディレクトリ | 役割 |
+| --- | --- |
+| `httpdocs/public/` | Web公開ルート。`index.php` が公開画面・管理画面のフロントコントローラ。 |
+| `httpdocs/app/` | CMS本体。DB接続、認証、リポジトリ、画像処理、メール送信、ビュー。 |
+| `httpdocs/database/` | MariaDBスキーマと初期データ投入スクリプト。 |
+| `httpdocs/config/` | 環境別設定。`config.local.php` はGit管理外。 |
+| `httpdocs/storage/` | メール送信失敗ログなどの書き込み領域。 |
+
+### 実装済み機能
+
+- 商品、カテゴリ、ニュース、固定ページ、問い合わせ履歴をMariaDBで管理。
+- 商品128件、画像1252件、SPEC919件を旧商品データから初期投入。
+- 未分類商品39件は `未分類 / Uncategorized` として投入し、後で管理画面から分類・削除できる。
+- 日本語/英語フィールドをDBに持ち、`Accept-Language` と `?lang=ja|en` で切替。
+- 商品ページから商品ID付きで問い合わせフォームへ遷移。
+- 問い合わせフォームはCSRFトークン、ハニーポット、最短送信時間チェックを実装。
+- 管理画面では画像アップロード時にGDで `large/card/thumb` 用画像を自動生成。
+- 旧 `garage-file/*.html` と主要カテゴリHTMLから新URLへリダイレクト。
+- 旧画像はコピーせず、`public/media.php` が許可済み旧素材パスだけを安全に配信。
+
+### 本番初期化
+
+```bash
+mysql -u aerotech_user -p aerotech_cms < httpdocs/database/schema.sql
+cd httpdocs
+AEROTECH_ADMIN_EMAIL='admin@aero-tech.co.jp' AEROTECH_ADMIN_PASSWORD='任意の強いパスワード' php database/seed.php
+```
+
+Pleskのドキュメントルートは `/var/www/vhosts/aero-tech.co.jp/httpdocs/public` に設定する。
+
 このドキュメントは、**(1) 現状のコードレビュー結果**、**(2) 今後の方針（レスポンシブ化・
 商品情報の編集容易化）**、**(3) 方針を検証するための試作版（prototype）** をまとめたものです。
 

@@ -1,0 +1,5 @@
+output/
+httpdocs/public/uploads/*
+!httpdocs/public/uploads/.gitkeep
+httpdocs/storage/logs/*
+!httpdocs/storage/logs/.gitkeep
