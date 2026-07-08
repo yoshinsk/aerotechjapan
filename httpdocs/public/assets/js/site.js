@@ -289,36 +289,270 @@ document.querySelectorAll('[data-translation-helper]').forEach((helper) => {
   buildDrafts();
 });
 
+const fileMatchesAccept = (file, accept) => {
+  const rules = String(accept || '')
+    .split(',')
+    .map((rule) => rule.trim().toLowerCase())
+    .filter(Boolean);
+  if (!rules.length) {
+    return true;
+  }
+  const fileName = file.name.toLowerCase();
+  const fileType = file.type.toLowerCase();
+  return rules.some((rule) => {
+    if (rule.startsWith('.')) {
+      return fileName.endsWith(rule);
+    }
+    if (rule === 'application/pdf' && fileName.endsWith('.pdf')) {
+      return true;
+    }
+    if (rule === 'image/*' && /\.(jpe?g|png|gif|webp)$/i.test(fileName)) {
+      return true;
+    }
+    if (rule.endsWith('/*')) {
+      return fileType.startsWith(rule.slice(0, -1));
+    }
+    return fileType === rule;
+  });
+};
+
+const setFileInputFiles = (input, files) => {
+  if (typeof DataTransfer === 'undefined') {
+    return false;
+  }
+  const selected = Array.from(files || [])
+    .filter((file) => fileMatchesAccept(file, input.accept))
+    .slice(0, input.multiple ? undefined : 1);
+  if (!selected.length) {
+    return false;
+  }
+  const transfer = new DataTransfer();
+  selected.forEach((file) => transfer.items.add(file));
+  input.files = transfer.files;
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  return true;
+};
+
+const fileInputLabel = (input) => {
+  const files = Array.from(input.files || []);
+  if (!files.length) {
+    return 'ファイルをここへドロップ、またはクリックして選択';
+  }
+  return files.map((file) => file.name).join(' / ');
+};
+
+document.querySelectorAll('.admin-form input[type="file"]').forEach((input) => {
+  const zone = input.closest('label') || input.parentElement;
+  if (!zone || zone.dataset.fileDropReady === '1') {
+    return;
+  }
+  zone.dataset.fileDropReady = '1';
+  zone.classList.add('file-drop-zone');
+  input.classList.add('file-drop-input');
+
+  const status = document.createElement('span');
+  status.className = 'file-drop-status';
+  zone.append(status);
+
+  const updateStatus = () => {
+    status.textContent = fileInputLabel(input);
+  };
+
+  ['dragenter', 'dragover'].forEach((type) => {
+    zone.addEventListener(type, (event) => {
+      event.preventDefault();
+      zone.classList.add('is-dragover');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach((type) => {
+    zone.addEventListener(type, () => {
+      zone.classList.remove('is-dragover');
+    });
+  });
+
+  zone.addEventListener('drop', (event) => {
+    event.preventDefault();
+    if (!setFileInputFiles(input, event.dataTransfer?.files || [])) {
+      status.textContent = '対応しているファイルをドロップしてください。';
+    }
+  });
+
+  input.addEventListener('change', updateStatus);
+  updateStatus();
+});
+
+document.querySelectorAll('[data-price-list-form]').forEach((form) => {
+  const button = form.querySelector('[data-price-list-ai-assist]');
+  const status = form.querySelector('[data-price-list-ai-status]');
+  const pdfInput = getFormControl(form, 'pdf');
+  if (!button || !status || !pdfInput) {
+    return;
+  }
+
+  const setStatus = (message) => {
+    status.textContent = message;
+  };
+
+  const setValue = (name, value) => {
+    const control = getFormControl(form, name);
+    if (!control || String(value || '').trim() === '') {
+      return false;
+    }
+    control.value = String(value).trim();
+    control.dispatchEvent(new Event('input', { bubbles: true }));
+    control.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  };
+
+  button.addEventListener('click', async () => {
+    const pdf = pdfInput.files?.[0];
+    const csrf = getFormControl(form, '_csrf')?.value || '';
+    const endpoint = resolveAdminEndpoint(form.getAttribute('data-price-list-ai-endpoint') || '');
+    if (!pdf) {
+      setStatus('先に価格表PDFをアップロードしてください。');
+      return;
+    }
+    if (!endpoint || !csrf) {
+      setStatus('AI補助の送信先が設定されていません。');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('_csrf', csrf);
+    formData.append('pdf', pdf, pdf.name);
+    button.disabled = true;
+    button.textContent = 'AI判定中...';
+    setStatus('PDF内容からブランド・タイトル・公開日を判定しています。');
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        throw new Error(result.message || 'AI判定に失敗しました。');
+      }
+
+      let applied = 0;
+      applied += setValue('category_id', result.category_id) ? 1 : 0;
+      applied += setValue('title_ja', result.title_ja) ? 1 : 0;
+      applied += setValue('title_en', result.title_en) ? 1 : 0;
+      applied += setValue('published_at', result.published_at) ? 1 : 0;
+      const confidenceLabel = { high: '高', medium: '中', low: '低' }[result.confidence] || result.confidence || '不明';
+      setStatus(`AI補助を${applied}項目へ反映しました。確度: ${confidenceLabel}。${result.reason || '内容を確認して保存してください。'}`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'AI判定に失敗しました。');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'PDFから入力補助';
+    }
+  });
+});
+
 document.querySelectorAll('[data-sortable-images]').forEach((list) => {
   let dragged = null;
 
-  list.addEventListener('dragstart', (event) => {
-    const item = event.target.closest('[data-image-sort-item]');
-    if (!item) {
-      return;
-    }
-    dragged = item;
-    item.classList.add('is-dragging');
-    event.dataTransfer.effectAllowed = 'move';
-  });
-
-  list.addEventListener('dragend', () => {
-    dragged?.classList.remove('is-dragging');
-    dragged = null;
-  });
-
-  list.addEventListener('dragover', (event) => {
+  const itemAtPoint = (x, y) => {
     if (!dragged) {
-      return;
+      return null;
     }
-    event.preventDefault();
-    const target = event.target.closest('[data-image-sort-item]');
-    if (!target || target === dragged) {
-      return;
-    }
+    dragged.style.pointerEvents = 'none';
+    const target = document.elementFromPoint(x, y)?.closest('[data-image-sort-item]');
+    dragged.style.pointerEvents = '';
+    return target?.parentElement === list ? target : null;
+  };
+
+  const shouldInsertBefore = (target, x, y) => {
     const rect = target.getBoundingClientRect();
-    const before = event.clientY < rect.top + rect.height / 2;
-    list.insertBefore(dragged, before ? target : target.nextSibling);
+    const columns = getComputedStyle(list)
+      .gridTemplateColumns
+      .split(' ')
+      .filter((column) => column && column !== 'none').length;
+    if (columns <= 1) {
+      return y < rect.top + rect.height / 2;
+    }
+    return x < rect.left + rect.width / 2;
+  };
+
+  const moveDraggedItem = (x, y) => {
+    const target = itemAtPoint(x, y);
+    if (!dragged || !target || target === dragged) {
+      return;
+    }
+
+    const before = shouldInsertBefore(target, x, y);
+    const reference = before ? target : target.nextElementSibling;
+    if (reference !== dragged) {
+      list.insertBefore(dragged, reference);
+    }
+  };
+
+  const finishDrag = (handle, pointerId) => {
+    dragged?.classList.remove('is-dragging');
+    list.classList.remove('is-sorting');
+    try {
+      handle.releasePointerCapture(pointerId);
+    } catch (error) {
+      // Pointer capture may already be released by the browser.
+    }
+    dragged = null;
+  };
+
+  list.querySelectorAll('[data-image-sort-item]').forEach((item) => {
+    item.removeAttribute('draggable');
+    const handle = item.querySelector('.drag-handle');
+    if (!handle) {
+      return;
+    }
+
+    handle.addEventListener('keydown', (event) => {
+      const previous = event.key === 'ArrowUp' || event.key === 'ArrowLeft';
+      const next = event.key === 'ArrowDown' || event.key === 'ArrowRight';
+      if (!previous && !next) {
+        return;
+      }
+      event.preventDefault();
+      if (previous && item.previousElementSibling) {
+        list.insertBefore(item, item.previousElementSibling);
+      }
+      if (next && item.nextElementSibling) {
+        list.insertBefore(item, item.nextElementSibling.nextElementSibling);
+      }
+      item.classList.add('is-reordered');
+      window.setTimeout(() => item.classList.remove('is-reordered'), 280);
+    });
+
+    handle.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) {
+        return;
+      }
+      event.preventDefault();
+      dragged = item;
+      item.classList.add('is-dragging');
+      list.classList.add('is-sorting');
+      try {
+        handle.setPointerCapture(event.pointerId);
+      } catch (error) {
+        // Older browser builds can omit pointer capture support.
+      }
+
+      const onPointerMove = (moveEvent) => {
+        moveEvent.preventDefault();
+        moveDraggedItem(moveEvent.clientX, moveEvent.clientY);
+      };
+      const onPointerUp = (upEvent) => {
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+        window.removeEventListener('pointercancel', onPointerUp);
+        finishDrag(handle, upEvent.pointerId);
+      };
+
+      window.addEventListener('pointermove', onPointerMove, { passive: false });
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
+    });
   });
 });
 

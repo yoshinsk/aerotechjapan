@@ -86,7 +86,7 @@
 <?php if ($product && $images): ?>
     <section class="admin-panel product-image-manager">
         <h2>登録画像</h2>
-        <p class="admin-help">画像はドラッグアンドドロップで並び替えできます。アップロード画像を削除・差し替えた場合、生成済みの画像ファイルも更新します。</p>
+        <p class="admin-help">画像は「並び替え」ボタンをドラッグして並び替えできます。キーボードでは矢印キーでも移動できます。</p>
         <form class="admin-form" method="post" enctype="multipart/form-data" action="<?= e(url('/admin/product-images-update')) ?>">
             <?= csrf_field() ?>
             <input type="hidden" name="product_id" value="<?= e($product['id']) ?>">

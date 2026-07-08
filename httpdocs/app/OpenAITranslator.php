@@ -90,6 +90,132 @@ final class OpenAITranslator
     }
 
     /**
+     * 価格表PDFをResponses APIへ渡し、CMS登録欄の候補値を推定します。
+     *
+     * @param array<string, mixed> $file
+     * @param array<int, array<string, mixed>> $categories
+     * @return array{category_id:string,title_ja:string,title_en:string,published_at:string,confidence:string,reason:string}
+     */
+    public function analyzePriceListPdf(array $file, array $categories): array
+    {
+        $apiKey = trim((string)($this->config['api_key'] ?? ''));
+        if ($apiKey === '') {
+            throw new RuntimeException('OpenAI APIキーが未設定です。管理画面の「設定」から登録してください。');
+        }
+
+        $tmp = (string)($file['tmp_name'] ?? '');
+        $name = (string)($file['name'] ?? 'price-list.pdf');
+        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || $tmp === '' || !is_file($tmp)) {
+            throw new RuntimeException('価格表PDFを確認できませんでした。');
+        }
+        if (strtolower(pathinfo($name, PATHINFO_EXTENSION)) !== 'pdf') {
+            throw new RuntimeException('PDFファイルを選択してください。');
+        }
+        if ((int)($file['size'] ?? 0) > 24 * 1024 * 1024) {
+            throw new RuntimeException('AI判定に使えるPDFは24MBまでです。');
+        }
+
+        $categoryCandidates = array_map(static fn(array $category): array => [
+            'id' => (string)($category['id'] ?? ''),
+            'slug' => (string)($category['slug'] ?? ''),
+            'name_ja' => (string)($category['name_ja'] ?? ''),
+            'name_en' => (string)($category['name_en'] ?? ''),
+        ], $categories);
+        $allowedCategoryIds = array_column($categoryCandidates, 'id');
+
+        $schema = [
+            'type' => 'object',
+            'additionalProperties' => false,
+            'properties' => [
+                'category_id' => [
+                    'type' => 'string',
+                    'description' => 'One category id from candidates. Return empty string if the PDF does not clearly match a candidate.',
+                ],
+                'title_ja' => ['type' => 'string'],
+                'title_en' => ['type' => 'string'],
+                'published_at' => [
+                    'type' => 'string',
+                    'description' => 'Publication or effective date in YYYY-MM-DD. Return empty string if unknown.',
+                ],
+                'confidence' => [
+                    'type' => 'string',
+                    'enum' => ['high', 'medium', 'low'],
+                ],
+                'reason' => ['type' => 'string'],
+            ],
+            'required' => ['category_id', 'title_ja', 'title_en', 'published_at', 'confidence', 'reason'],
+        ];
+
+        $fileId = null;
+        $content = [
+            [
+                'type' => 'input_text',
+                'text' => json_encode([
+                    'task' => 'Read this automotive aftermarket price list PDF and suggest CMS fields.',
+                    'rules' => [
+                        'Choose category_id only from the provided category candidates.',
+                        'Do not invent a brand, title, date, product line, or year that is not supported by the PDF.',
+                        'For title_ja, prefer a concise Japanese title such as "<brand> 価格表 <year>" when supported.',
+                        'For title_en, prefer a concise English title such as "<brand> Price List <year>" when supported.',
+                        'If the date is unclear, return an empty published_at.',
+                    ],
+                    'category_candidates' => $categoryCandidates,
+                    'filename' => mb_substr($name, 0, 180),
+                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            ],
+        ];
+
+        try {
+            if (function_exists('curl_init') && class_exists('CURLFile')) {
+                $fileId = $this->uploadUserDataFile($tmp, $name, $apiKey);
+                $content[] = ['type' => 'input_file', 'file_id' => $fileId];
+            } else {
+                $content[] = [
+                    'type' => 'input_file',
+                    'filename' => mb_substr($name, 0, 180),
+                    'file_data' => base64_encode((string)file_get_contents($tmp)),
+                ];
+            }
+
+            $payload = [
+                'model' => $this->config['model'] ?? 'gpt-5.4-mini',
+                'reasoning' => ['effort' => $this->config['reasoning_effort'] ?? 'low'],
+                'instructions' => implode("\n", [
+                    'You extract registration metadata from Japanese/English automotive price list PDFs.',
+                    'Return only values supported by the PDF content.',
+                    'Prefer exact matching against the provided category candidates.',
+                ]),
+                'input' => [
+                    [
+                        'role' => 'user',
+                        'content' => $content,
+                    ],
+                ],
+                'text' => [
+                    'format' => [
+                        'type' => 'json_schema',
+                        'name' => 'price_list_assist',
+                        'strict' => true,
+                        'schema' => $schema,
+                    ],
+                ],
+            ];
+
+            $response = $this->request($payload, $apiKey);
+            $text = $this->extractText($response);
+            $decoded = json_decode($text, true);
+            if (!is_array($decoded)) {
+                throw new RuntimeException('OpenAI APIの応答をJSONとして解析できませんでした。');
+            }
+            return $this->normalizePriceListAssistResponse($decoded, $allowedCategoryIds);
+        } finally {
+            if ($fileId !== null) {
+                $this->deleteUploadedFile($fileId, $apiKey);
+            }
+        }
+    }
+
+    /**
      * 入力欄ごとの翻訳対象を検証し、過大な文字列を切り詰めます。
      *
      * @param array<int, mixed> $fields
@@ -215,6 +341,64 @@ final class OpenAITranslator
         return ['status' => $status, 'body' => (string)$response];
     }
 
+    private function uploadUserDataFile(string $path, string $filename, string $apiKey): string
+    {
+        $baseUrl = rtrim((string)($this->config['base_url'] ?? 'https://api.openai.com/v1'), '/');
+        $timeout = max(20, (int)($this->config['timeout'] ?? 30));
+        $curl = curl_init($baseUrl . '/files');
+        if ($curl === false) {
+            throw new RuntimeException('OpenAI Files APIを初期化できませんでした。');
+        }
+        curl_setopt_array($curl, [
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $apiKey,
+            ],
+            CURLOPT_POSTFIELDS => [
+                'purpose' => 'user_data',
+                'file' => new CURLFile($path, 'application/pdf', $filename),
+            ],
+            CURLOPT_TIMEOUT => $timeout,
+        ]);
+        $response = curl_exec($curl);
+        $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+        $error = curl_error($curl);
+        curl_close($curl);
+        if ($response === false) {
+            throw new RuntimeException('OpenAI Files APIへの接続に失敗しました: ' . $error);
+        }
+        $decoded = json_decode((string)$response, true);
+        if (!is_array($decoded) || $status >= 400) {
+            $message = is_array($decoded) ? ($decoded['error']['message'] ?? 'OpenAI Files APIエラー') : 'OpenAI Files APIの応答を解析できませんでした。';
+            throw new RuntimeException((string)$message);
+        }
+        $fileId = trim((string)($decoded['id'] ?? ''));
+        if ($fileId === '') {
+            throw new RuntimeException('OpenAI Files APIの応答にfile_idがありません。');
+        }
+        return $fileId;
+    }
+
+    private function deleteUploadedFile(string $fileId, string $apiKey): void
+    {
+        $baseUrl = rtrim((string)($this->config['base_url'] ?? 'https://api.openai.com/v1'), '/');
+        if (function_exists('curl_init')) {
+            $curl = curl_init($baseUrl . '/files/' . rawurlencode($fileId));
+            if ($curl === false) {
+                return;
+            }
+            curl_setopt_array($curl, [
+                CURLOPT_CUSTOMREQUEST => 'DELETE',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $apiKey],
+                CURLOPT_TIMEOUT => 10,
+            ]);
+            curl_exec($curl);
+            curl_close($curl);
+        }
+    }
+
     /**
      * Responses APIのoutput配列から生成テキストを安全に抽出します。
      *
@@ -269,6 +453,36 @@ final class OpenAITranslator
         return [
             'translations' => $translations,
             'slug' => slugify_ascii((string)($decoded['slug'] ?? '')),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $decoded
+     * @param array<int, string> $allowedCategoryIds
+     * @return array{category_id:string,title_ja:string,title_en:string,published_at:string,confidence:string,reason:string}
+     */
+    private function normalizePriceListAssistResponse(array $decoded, array $allowedCategoryIds): array
+    {
+        $categoryId = trim((string)($decoded['category_id'] ?? ''));
+        if (!in_array($categoryId, $allowedCategoryIds, true)) {
+            $categoryId = '';
+        }
+        $publishedAt = trim((string)($decoded['published_at'] ?? ''));
+        if ($publishedAt !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $publishedAt)) {
+            $publishedAt = '';
+        }
+        $confidence = trim((string)($decoded['confidence'] ?? 'low'));
+        if (!in_array($confidence, ['high', 'medium', 'low'], true)) {
+            $confidence = 'low';
+        }
+
+        return [
+            'category_id' => $categoryId,
+            'title_ja' => mb_substr(trim((string)($decoded['title_ja'] ?? '')), 0, 255),
+            'title_en' => mb_substr(trim((string)($decoded['title_en'] ?? '')), 0, 255),
+            'published_at' => $publishedAt,
+            'confidence' => $confidence,
+            'reason' => mb_substr(trim((string)($decoded['reason'] ?? '')), 0, 500),
         ];
     }
 }

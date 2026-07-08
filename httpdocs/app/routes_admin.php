@@ -8,6 +8,22 @@ declare(strict_types=1);
 
 $imageService = new ImageService();
 $fileService = new FileUploadService();
+$openaiConfigForCms = static function () use ($repo): array {
+    $openaiConfig = config_value('openai', []);
+    $savedApiKey = $repo->setting('openai_api_key');
+    $savedModel = $repo->setting('openai_model');
+    $savedReasoning = $repo->setting('openai_reasoning_effort');
+    if ($savedApiKey !== '') {
+        $openaiConfig['api_key'] = $savedApiKey;
+    }
+    if ($savedModel !== '') {
+        $openaiConfig['model'] = $savedModel;
+    }
+    if ($savedReasoning !== '') {
+        $openaiConfig['reasoning_effort'] = $savedReasoning;
+    }
+    return $openaiConfig;
+};
 
 if ($path === '/admin/ai-translate') {
     if (!is_post()) {
@@ -45,23 +61,28 @@ if ($path === '/admin/ai-translate') {
         ];
     }
 
-    $openaiConfig = config_value('openai', []);
-    $savedApiKey = $repo->setting('openai_api_key');
-    $savedModel = $repo->setting('openai_model');
-    $savedReasoning = $repo->setting('openai_reasoning_effort');
-    if ($savedApiKey !== '') {
-        $openaiConfig['api_key'] = $savedApiKey;
+    try {
+        $translator = new OpenAITranslator($openaiConfigForCms());
+        $result = $translator->translateFields($fields, trim((string)($body['context'] ?? '')));
+        json_response(['ok' => true] + $result);
+    } catch (Throwable $e) {
+        json_response(['ok' => false, 'message' => $e->getMessage()], 400);
     }
-    if ($savedModel !== '') {
-        $openaiConfig['model'] = $savedModel;
+}
+
+if ($path === '/admin/price-list-ai-assist') {
+    if (!is_post()) {
+        json_response(['ok' => false, 'message' => 'POSTで送信してください。'], 405);
     }
-    if ($savedReasoning !== '') {
-        $openaiConfig['reasoning_effort'] = $savedReasoning;
+
+    verify_csrf();
+    if (empty($_FILES['pdf']['name'])) {
+        json_response(['ok' => false, 'message' => '価格表PDFを選択してください。'], 400);
     }
 
     try {
-        $translator = new OpenAITranslator($openaiConfig);
-        $result = $translator->translateFields($fields, trim((string)($body['context'] ?? '')));
+        $translator = new OpenAITranslator($openaiConfigForCms());
+        $result = $translator->analyzePriceListPdf($_FILES['pdf'], $repo->categories(false));
         json_response(['ok' => true] + $result);
     } catch (Throwable $e) {
         json_response(['ok' => false, 'message' => $e->getMessage()], 400);
