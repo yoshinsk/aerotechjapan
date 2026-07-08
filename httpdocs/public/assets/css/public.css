@@ -1,0 +1,466 @@
+/*
+ * httpdocs/public/assets/css/public.css
+ * Bootstrap 5を前提に公開サイトのAERO TECH JAPANらしい黒基調UIを定義します。
+ */
+
+:root {
+  --aero-bg: #050505;
+  --aero-surface: #111;
+  --aero-surface-2: #181818;
+  --aero-line: #2b2b2b;
+  --aero-text: #f4f4f4;
+  --aero-muted: #a8a8a8;
+  --aero-cyan: #4dd8ff;
+  --aero-red: #e12d2d;
+}
+
+body.site-body {
+  background: var(--aero-bg);
+  color: var(--aero-text);
+  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  line-height: 1.65;
+}
+
+.site-body a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  min-height: 72px;
+  background: rgba(5, 5, 5, .94);
+  border-bottom: 1px solid var(--aero-line);
+  backdrop-filter: blur(14px);
+}
+
+.site-header-inner {
+  min-height: 72px;
+  padding-inline: clamp(18px, 4vw, 56px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--aero-text);
+  font-weight: 800;
+}
+
+.brand:hover,
+.brand:focus {
+  color: var(--aero-text);
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  background: var(--aero-red);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.brand-text {
+  font-size: clamp(15px, 3.8vw, 22px);
+  white-space: nowrap;
+}
+
+.nav-toggle {
+  display: grid;
+  gap: 5px;
+  width: 42px;
+  height: 42px;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--aero-line);
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.nav-toggle span {
+  height: 2px;
+  background: #fff;
+}
+
+.nav-toggle:focus {
+  box-shadow: 0 0 0 .2rem rgba(77, 216, 255, .2);
+}
+
+.site-nav {
+  border-top: 1px solid var(--aero-line);
+}
+
+.site-nav .navbar-nav {
+  padding-block: 12px;
+}
+
+.site-nav .nav-link {
+  color: var(--aero-muted);
+  border-bottom: 1px solid #202020;
+}
+
+.site-nav .nav-link:hover,
+.site-nav .nav-link:focus,
+.site-nav .lang-link {
+  color: var(--aero-cyan);
+}
+
+.hero {
+  min-height: calc(100svh - 72px);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, .08), rgba(0, 0, 0, .76)),
+    linear-gradient(90deg, rgba(0, 0, 0, .82), rgba(0, 0, 0, .24));
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 980px;
+  padding: clamp(88px, 14vw, 140px) clamp(18px, 4vw, 56px) 48px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--aero-cyan);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.site-body h1,
+.site-body h2,
+.site-body h3 {
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.hero h1 {
+  max-width: 850px;
+  font-size: clamp(42px, 12vw, 108px);
+}
+
+.hero p {
+  max-width: 720px;
+  color: #e8e8e8;
+  font-size: clamp(15px, 2.2vw, 19px);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.button,
+button.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  color: #fff;
+  background: var(--aero-red);
+  border: 1px solid var(--aero-red);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.button:hover,
+.button:focus {
+  color: #fff;
+  background: #f13b3b;
+  border-color: #f13b3b;
+}
+
+.button.secondary {
+  color: var(--aero-cyan);
+  background: transparent;
+  border-color: var(--aero-cyan);
+}
+
+.button.secondary:hover,
+.button.secondary:focus {
+  color: #031014;
+  background: var(--aero-cyan);
+  border-color: var(--aero-cyan);
+}
+
+.section {
+  padding: clamp(44px, 8vw, 86px) clamp(18px, 4vw, 56px);
+}
+
+.narrow {
+  max-width: 960px;
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.section-head h2 {
+  font-size: clamp(26px, 5vw, 48px);
+}
+
+.muted {
+  color: var(--aero-muted);
+}
+
+.category-chip {
+  display: block;
+  padding: 14px;
+  color: var(--aero-muted);
+  background: var(--aero-surface);
+  border: 1px solid var(--aero-line);
+  border-radius: 8px;
+}
+
+.category-chip:hover,
+.category-chip:focus {
+  color: var(--aero-text);
+  border-color: var(--aero-cyan);
+}
+
+.category-chip strong {
+  display: block;
+  color: var(--aero-text);
+}
+
+.product-card,
+.news-card {
+  height: 100%;
+  color: var(--aero-text);
+  background: var(--aero-surface);
+  border: 1px solid var(--aero-line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card-link {
+  display: grid;
+  height: 100%;
+  color: inherit;
+}
+
+.card-link:hover,
+.card-link:focus {
+  color: inherit;
+}
+
+.product-card .card-img-top,
+.news-card .card-img-top {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #151515;
+}
+
+.card-body {
+  padding: 15px;
+}
+
+.card-meta {
+  color: var(--aero-cyan);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.card-title {
+  margin-top: 6px;
+  font-size: 17px;
+}
+
+.gallery-main {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #111;
+  border: 1px solid var(--aero-line);
+  border-radius: 8px;
+}
+
+.gallery-thumbs {
+  margin-top: 8px;
+}
+
+.gallery-thumbs button {
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--aero-line);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.gallery-thumbs img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.spec-table {
+  margin-top: 18px;
+  --bs-table-bg: var(--aero-surface);
+  --bs-table-color: var(--aero-text);
+  --bs-table-border-color: var(--aero-line);
+  --bs-table-hover-bg: #1b1b1b;
+  --bs-table-hover-color: var(--aero-text);
+}
+
+.spec-table th {
+  width: 44%;
+  color: var(--aero-muted);
+  font-weight: 600;
+}
+
+.rich-content {
+  display: grid;
+  gap: 22px;
+}
+
+.rich-content h2 {
+  margin-top: 10px;
+  color: var(--aero-cyan);
+  font-size: clamp(22px, 4vw, 34px);
+}
+
+.rich-content a {
+  color: var(--aero-cyan);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.rich-content table {
+  width: 100%;
+  color: var(--aero-text);
+  background: var(--aero-surface);
+  border: 1px solid var(--aero-line);
+}
+
+.rich-content th,
+.rich-content td {
+  padding: 10px;
+  border-bottom: 1px solid var(--aero-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.rich-content th {
+  width: 34%;
+  color: var(--aero-muted);
+}
+
+.rich-content img {
+  border: 1px solid var(--aero-line);
+  border-radius: 8px;
+}
+
+.field label {
+  color: var(--aero-muted);
+  font-size: 13px;
+}
+
+.site-body .form-control {
+  min-height: 44px;
+  color: var(--aero-text);
+  background: #0d0d0d;
+  border-color: var(--aero-line);
+}
+
+.site-body .form-control:focus {
+  color: var(--aero-text);
+  background: #101010;
+  border-color: var(--aero-cyan);
+  box-shadow: 0 0 0 .2rem rgba(77, 216, 255, .18);
+}
+
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 28px clamp(18px, 4vw, 56px);
+  color: var(--aero-muted);
+  border-top: 1px solid var(--aero-line);
+}
+
+.site-footer div,
+.site-footer nav {
+  display: grid;
+  gap: 4px;
+}
+
+.site-footer a {
+  color: var(--aero-cyan);
+}
+
+.notice {
+  padding: 10px 12px;
+  color: #062c19;
+  background: #d9fbea;
+  border: 1px solid #9be2bb;
+  border-radius: 8px;
+}
+
+.error-box {
+  padding: 10px 12px;
+  color: #3b0a0a;
+  background: #fff0f0;
+  border: 1px solid #e6a2a2;
+  border-radius: 8px;
+}
+
+.hp-field {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@media (min-width: 992px) {
+  .site-nav {
+    border-top: 0;
+  }
+
+  .site-nav .navbar-nav {
+    align-items: center;
+    gap: 22px;
+    padding-block: 0;
+  }
+
+  .site-nav .nav-link {
+    padding: 0;
+    border-bottom: 0;
+  }
+}

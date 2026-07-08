@@ -8,9 +8,11 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/app/bootstrap.php';
 
+$path = request_path();
+require_https_request();
+
 $repo = new CmsRepository(Database::pdo());
 $auth = new Auth(Database::pdo());
-$path = request_path();
 
 try {
     if ($path === '/admin/login') {

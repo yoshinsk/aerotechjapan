@@ -18,10 +18,24 @@ final class Auth
         if (!$id) {
             return null;
         }
+
+        $idleTimeout = (int)config_value('security.session_idle_timeout', 1800);
+        $lastSeen = (int)($_SESSION['admin_last_seen_at'] ?? 0);
+        if ($idleTimeout > 0 && $lastSeen > 0 && (time() - $lastSeen) > $idleTimeout) {
+            $this->logout();
+            return null;
+        }
+
         $stmt = $this->pdo->prepare('SELECT * FROM users WHERE id = ? AND is_active = 1');
         $stmt->execute([(int)$id]);
         $user = $stmt->fetch();
-        return $user ?: null;
+        if (!$user) {
+            $this->logout();
+            return null;
+        }
+
+        $_SESSION['admin_last_seen_at'] = time();
+        return $user;
     }
 
     public function attempt(string $email, string $password): bool
@@ -34,8 +48,13 @@ final class Auth
             return false;
         }
 
-        $_SESSION['admin_user_id'] = (int)$user['id'];
         session_regenerate_id(true);
+        $_SESSION['admin_user_id'] = (int)$user['id'];
+        $_SESSION['admin_last_seen_at'] = time();
+        if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
+            $this->pdo->prepare('UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?')
+                ->execute([password_hash($password, PASSWORD_DEFAULT), (int)$user['id']]);
+        }
         $this->pdo->prepare('UPDATE users SET last_login_at = NOW() WHERE id = ?')->execute([(int)$user['id']]);
         return true;
     }
@@ -43,6 +62,7 @@ final class Auth
     public function logout(): void
     {
         unset($_SESSION['admin_user_id']);
+        unset($_SESSION['admin_last_seen_at']);
         session_regenerate_id(true);
     }
 

@@ -5,21 +5,23 @@
  */
 $mainImage = $images[0]['path'] ?? null;
 ?>
-<section class="section product-layout">
-    <div>
+<section class="section product-layout container-fluid row g-4">
+    <div class="col-12 col-lg-7">
         <img class="gallery-main" data-gallery-main src="<?= e(media_url($mainImage)) ?>" alt="<?= e(localized($product, 'name')) ?>">
         <?php if ($images): ?>
-            <div class="gallery-thumbs">
+            <div class="gallery-thumbs row row-cols-4 row-cols-md-6 g-2">
                 <?php foreach ($images as $image): ?>
-                    <button type="button" data-gallery-thumb data-src="<?= e(media_url($image['path'])) ?>">
-                        <img src="<?= e(media_url($image['path'])) ?>" alt="<?= e(localized($image, 'alt', localized($product, 'name'))) ?>" loading="lazy">
-                    </button>
+                    <div class="col">
+                        <button type="button" data-gallery-thumb data-src="<?= e(media_url($image['path'])) ?>">
+                            <img src="<?= e(media_url($image['path'])) ?>" alt="<?= e(localized($image, 'alt', localized($product, 'name'))) ?>" loading="lazy">
+                        </button>
+                    </div>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
     </div>
 
-    <div>
+    <div class="col-12 col-lg-5">
         <p class="eyebrow"><?= e($product['category_name_' . current_locale()] ?? $product['category_name_ja'] ?? '') ?></p>
         <h1><?= e(localized($product, 'name')) ?></h1>
         <?php if (localized($product, 'model_year') !== ''): ?>
@@ -34,7 +36,7 @@ $mainImage = $images[0]['path'] ?? null;
         </div>
 
         <?php if ($specs): ?>
-            <table class="spec-table">
+            <table class="spec-table table table-dark table-hover">
                 <tbody>
                 <?php foreach ($specs as $spec): ?>
                     <tr>

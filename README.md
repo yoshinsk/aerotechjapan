@@ -18,6 +18,9 @@
 | `httpdocs/config/` | 環境別設定。`config.local.php` はGit管理外。 |
 | `httpdocs/storage/` | メール送信失敗ログなどの書き込み領域。 |
 
+公開サイトのCSSは `httpdocs/public/assets/css/public.css` に分離し、Bootstrap 5 + 公開サイト専用テーマで構成する。
+管理画面は `httpdocs/public/assets/css/site.css` を利用する。
+
 ### 実装済み機能
 
 - 商品、カテゴリ、ニュース、固定ページ、問い合わせ履歴をMariaDBで管理。
@@ -27,8 +30,11 @@
 - 商品ページから商品ID付きで問い合わせフォームへ遷移。
 - 問い合わせフォームはCSRFトークン、ハニーポット、最短送信時間チェックを実装。
 - 管理画面では画像アップロード時にGDで `large/card/thumb` 用画像を自動生成。
+- 公開サイトはBootstrap 5を読み込み、既存サイト由来の黒基調・赤アクセント・シアンリンクを維持してレスポンシブ表示。
 - 管理画面はBootstrap 5を読み込み、黒基調・赤アクセント・シアンリンクの既存サイトイメージに合わせて表示。
 - 商品管理一覧はカテゴリタブ、検索、サムネイル、公開/下書きバッジで絞り込み編集できる。
+- 管理認証は `password_hash` / `password_verify`、Secure/HttpOnly/SameSite Cookie、30分アイドルタイムアウト、HTTPS強制を実装。
+- 公開ルート `httpdocs/public/` のCMS応答、DB、メール、Apache既定文字コードはUTF-8に統一。
 - 旧 `garage-file/*.html` と主要カテゴリHTMLから新URLへリダイレクト。
 - 旧画像はコピーせず、`public/media.php` が許可済み旧素材パスだけを安全に配信。
 
@@ -204,9 +210,9 @@ mysql -u root -p < httpdocs/prototype/schema.sql
    UTF-8 で JSON / SQL を生成。~~ ✅ 完了（全 128 商品、`tools/migrate.py`）
 4. **全商品をデータ駆動化（仕上げ）**: 抽出データの表記ゆれ補正、拡大画像（クリック時）
    への対応、ダッシュ／サイドテーブル系の取り込み。
-5. **管理画面の拡充**: 認証強化（セッション＋ハッシュ化、HTTPS 必須）、
-   画像アップロード、商品の追加・削除・並び替え。商品一覧のカテゴリ別タブ表示は実装済み。
-6. **UTF-8 完全移行**: 残存する Shift_JIS ページ・メールフォームの文字コードを統一。
+5. ~~**管理画面の拡充**: 認証強化（セッション＋ハッシュ化、HTTPS 必須）、
+   画像アップロード、商品の追加・削除・並び替え。商品一覧のカテゴリ別タブ表示は実装済み。~~ ✅ 主要機能は実装済み
+6. ~~**UTF-8 完全移行**: 公開されるCMS応答、DB、メール、Apache既定文字コードをUTF-8へ統一。~~ ✅ 完了
 7. **本番切替・リダイレクト整備**: MariaDB へ `products.sql` を投入、旧 URL
    （`garage-file/xxx.html`）から新 URL への 301 リダイレクト。
 
@@ -214,8 +220,8 @@ mysql -u root -p < httpdocs/prototype/schema.sql
 
 ## 5. 注意事項
 
-- 試作版の編集フォームはパスワード 1 個のみの**簡易認証**。本番では必ず
-  セッション認証・パスワードのハッシュ化・HTTPS 必須に置き換えること。
+- 旧HTML、旧CGI、旧画像HTMLラッパーは `httpdocs/` 配下に保管されているが、Pleskの公開ルートは
+  `httpdocs/public/` とする。旧Shift_JIS資産はCMS移行元・画像参照元として扱い、直接公開しない。
 - `cgi-bin/`・`acme.log`・各種解析タグは現行運用に関わるため、移行時に扱いを要確認。
 - コミット時、`Thumbs.db` / `.DS_Store` / `_notes/`（Dreamweaver）等の不要ファイルは
   整理対象。

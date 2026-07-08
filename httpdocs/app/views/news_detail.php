@@ -4,7 +4,7 @@
  * ニュース詳細を公開画面へ描画します。
  */
 ?>
-<article class="section narrow">
+<article class="section narrow container">
     <p class="eyebrow"><?= e(date('Y.m.d', strtotime($post['published_at']))) ?></p>
     <h1><?= e(localized($post, 'title')) ?></h1>
     <?php if (!empty($post['image_path']) && is_image_path($post['image_path'])): ?>

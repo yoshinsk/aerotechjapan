@@ -23,7 +23,22 @@ $GLOBALS['aerotech_config'] = $config;
 $sessionName = $config['security']['session_name'] ?? 'AEROTECHCMS';
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_name($sessionName);
+    $secureRequest = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (string)($_SERVER['SERVER_PORT'] ?? '') === '443'
+        || strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
+    session_set_cookie_params([
+        'lifetime' => (int)($config['security']['session_lifetime'] ?? 0),
+        'path' => '/',
+        'secure' => $secureRequest || (bool)($config['security']['require_https'] ?? true),
+        'httponly' => true,
+        'samesite' => (string)($config['security']['session_same_site'] ?? 'Lax'),
+    ]);
     session_start();
+}
+
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=UTF-8');
+    header('X-Content-Type-Options: nosniff');
 }
 
 require_once APP_ROOT . '/functions.php';

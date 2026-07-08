@@ -33,6 +33,10 @@ return [
     ],
     'security' => [
         'session_name' => 'AEROTECHCMS',
+        'require_https' => true,
+        'session_lifetime' => 0,
+        'session_idle_timeout' => 1800,
+        'session_same_site' => 'Lax',
         'honeypot_field' => 'company_website',
         'minimum_form_seconds' => 3,
     ],

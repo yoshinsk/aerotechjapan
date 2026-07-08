@@ -41,6 +41,32 @@ function request_path(): string
     return $path === '/' ? '/' : rtrim($path, '/');
 }
 
+function is_https_request(): bool
+{
+    if (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') {
+        return true;
+    }
+    if ((string)($_SERVER['SERVER_PORT'] ?? '') === '443') {
+        return true;
+    }
+    return strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
+}
+
+function require_https_request(): void
+{
+    if (is_https_request() || !(bool)config_value('security.require_https', true)) {
+        return;
+    }
+
+    $host = preg_replace('/[^A-Za-z0-9.\-:\[\]]/', '', (string)($_SERVER['HTTP_HOST'] ?? ''));
+    $uri = (string)($_SERVER['REQUEST_URI'] ?? '/');
+    if ($host === '') {
+        $host = 'aero-tech.co.jp';
+    }
+    header('Location: https://' . $host . $uri, true, 301);
+    exit;
+}
+
 function url(string $path = ''): string
 {
     $path = '/' . ltrim($path, '/');

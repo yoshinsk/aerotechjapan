@@ -6,6 +6,12 @@
 
 declare(strict_types=1);
 
+if ($path === '/favicon.ico') {
+    header('Content-Type: image/svg+xml; charset=UTF-8');
+    echo '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="8" fill="#e12d2d"/><path fill="#fff" d="M13 44 28 16h8l15 28h-8l-3-7H24l-3 7h-8Zm14-14h10l-5-11-5 11Z"/></svg>';
+    return;
+}
+
 if ($path === '/') {
     render('home', [
         'repo' => $repo,
