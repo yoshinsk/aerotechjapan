@@ -93,24 +93,56 @@ final class CmsRepository
         return $stmt->fetchAll();
     }
 
-    public function adminProducts(?string $keyword = null): array
+    public function adminProducts(?string $keyword = null, string $categoryFilter = 'all'): array
     {
         $params = [];
-        $where = '';
+        $where = [];
+
         if ($keyword !== null && trim($keyword) !== '') {
-            $where = 'WHERE p.name_ja LIKE ? OR p.name_en LIKE ? OR p.slug LIKE ?';
+            $where[] = '(p.name_ja LIKE ? OR p.name_en LIKE ? OR p.slug LIKE ?)';
             $needle = '%' . trim($keyword) . '%';
             $params = [$needle, $needle, $needle];
         }
+
+        $categoryFilter = trim($categoryFilter);
+        if ($categoryFilter === 'uncategorized') {
+            $where[] = 'p.category_id IS NULL';
+        } elseif (ctype_digit($categoryFilter) && (int)$categoryFilter > 0) {
+            $where[] = 'p.category_id = ?';
+            $params[] = (int)$categoryFilter;
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
         $stmt = $this->pdo->prepare(
-            "SELECT p.*, c.name_ja AS category_name_ja
+            "SELECT p.*, c.name_ja AS category_name_ja,
+                    (SELECT path FROM product_images WHERE product_id = p.id ORDER BY is_main DESC, sort_order, id LIMIT 1) AS main_image
              FROM products p LEFT JOIN categories c ON c.id = p.category_id
-             {$where}
+             {$whereSql}
              ORDER BY p.updated_at DESC, p.id DESC
              LIMIT 300"
         );
         $stmt->execute($params);
         return $stmt->fetchAll();
+    }
+
+    public function adminProductCategoryCounts(): array
+    {
+        $counts = [
+            'all' => 0,
+            'uncategorized' => 0,
+            'categories' => [],
+        ];
+        $rows = $this->pdo->query('SELECT category_id, COUNT(*) AS total FROM products GROUP BY category_id')->fetchAll();
+        foreach ($rows as $row) {
+            $total = (int)$row['total'];
+            $counts['all'] += $total;
+            if ($row['category_id'] === null) {
+                $counts['uncategorized'] = $total;
+                continue;
+            }
+            $counts['categories'][(int)$row['category_id']] = $total;
+        }
+        return $counts;
     }
 
     public function productBySlug(string $slug): ?array

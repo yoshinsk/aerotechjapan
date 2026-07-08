@@ -115,8 +115,22 @@ if ($path === '/admin/settings') {
 }
 
 if ($path === '/admin/products') {
+    $categoryFilter = trim((string)($_GET['category'] ?? 'all'));
+    if ($categoryFilter !== 'all' && $categoryFilter !== 'uncategorized' && (!ctype_digit($categoryFilter) || (int)$categoryFilter < 1)) {
+        $categoryFilter = 'all';
+    }
+    $categories = $repo->categories(false);
+    if (ctype_digit($categoryFilter)) {
+        $categoryIds = array_map(static fn($category) => (int)$category['id'], $categories);
+        if (!in_array((int)$categoryFilter, $categoryIds, true)) {
+            $categoryFilter = 'all';
+        }
+    }
     admin_render('products', [
-        'products' => $repo->adminProducts($_GET['q'] ?? null),
+        'products' => $repo->adminProducts($_GET['q'] ?? null, $categoryFilter),
+        'categories' => $categories,
+        'categoryCounts' => $repo->adminProductCategoryCounts(),
+        'activeCategory' => $categoryFilter,
         'keyword' => trim((string)($_GET['q'] ?? '')),
         'title' => '商品管理',
     ]);

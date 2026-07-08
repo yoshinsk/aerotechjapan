@@ -469,8 +469,10 @@ button.button {
 .admin-body {
   display: grid;
   min-height: 100svh;
-  background: #f4f5f7;
-  color: #151515;
+  background:
+    linear-gradient(135deg, rgba(225, 45, 45, .16), transparent 34%),
+    linear-gradient(180deg, #070707 0%, #101010 100%);
+  color: var(--text);
 }
 
 .admin-sidebar {
@@ -480,12 +482,21 @@ button.button {
   display: grid;
   gap: 12px;
   padding: 14px;
-  background: #111;
+  background: rgba(10, 10, 10, .96);
   color: #fff;
+  border-bottom: 1px solid #2f2f2f;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .28);
 }
 
 .admin-logo {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 8px 10px;
+  background: var(--red);
+  color: #fff;
   font-weight: 800;
+  line-height: 1.1;
 }
 
 .admin-sidebar nav {
@@ -495,15 +506,22 @@ button.button {
 }
 
 .admin-sidebar a {
+  padding: 8px 10px;
+  border-radius: 6px;
   white-space: nowrap;
   color: #e8e8e8;
 }
 
+.admin-sidebar nav a:hover {
+  background: #191919;
+  color: var(--cyan);
+}
+
 .admin-main {
   width: 100%;
-  max-width: 1180px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 22px;
+  padding: clamp(18px, 3vw, 34px);
 }
 
 .login-main {
@@ -523,32 +541,64 @@ button.button {
 
 .login-main .admin-panel {
   width: min(420px, calc(100vw - 32px));
+  background: #fff;
+  color: #111;
+  border-color: #ddd;
 }
 
 .admin-panel {
-  padding: 18px;
-  background: #fff;
-  border: 1px solid #ddd;
+  padding: clamp(16px, 2.2vw, 24px);
+  background: rgba(17, 17, 17, .94);
+  border: 1px solid #2e2e2e;
   border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.admin-page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.admin-page-head h1 {
+  font-size: clamp(28px, 5vw, 48px);
+}
+
+.admin-primary-action {
+  min-height: 44px;
+  border-radius: var(--radius);
+  font-weight: 800;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
+  color: var(--text);
+  background: #121212;
+  border-color: #282828;
+  --bs-table-bg: #121212;
+  --bs-table-color: var(--text);
+  --bs-table-border-color: #282828;
+  --bs-table-hover-bg: #1d1d1d;
+  --bs-table-hover-color: var(--text);
 }
 
 .admin-table th,
 .admin-table td {
-  padding: 10px;
-  border-bottom: 1px solid #e4e4e4;
+  padding: 12px;
+  border-bottom: 1px solid #282828;
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .admin-table th {
-  color: #666;
+  color: #bcbcbc;
   font-size: 13px;
+  font-weight: 800;
+  background: #0b0b0b;
 }
 
 .admin-form {
@@ -561,10 +611,26 @@ button.button {
 .admin-form textarea {
   width: 100%;
   padding: 10px;
+  color: #f8f9fa;
+  background: #0d0d0d;
+  border: 1px solid #373737;
+  border-radius: var(--radius);
+}
+
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus {
+  border-color: var(--cyan);
+  outline: 0;
+  box-shadow: 0 0 0 .2rem rgba(77, 216, 255, .18);
+}
+
+.login-main .admin-form input,
+.login-main .admin-form select,
+.login-main .admin-form textarea {
   color: #111;
   background: #fff;
-  border: 1px solid #ccc;
-  border-radius: var(--radius);
+  border-color: #ccc;
 }
 
 .admin-form label {
@@ -585,7 +651,7 @@ button.button {
 
 .admin-help {
   margin: 0 0 14px;
-  color: #52606d;
+  color: #b8c0c8;
   font-size: 13px;
 }
 
@@ -606,8 +672,8 @@ button.button {
   display: grid;
   gap: 12px;
   padding: 14px;
-  background: #f7f9fb;
-  border: 1px solid #d9e2ea;
+  background: #0d0d0d;
+  border: 1px solid #343434;
   border-radius: var(--radius);
 }
 
@@ -624,7 +690,7 @@ button.button {
 .translation-helper p,
 .translation-helper-status {
   margin: 4px 0 0;
-  color: #52606d;
+  color: #b8c0c8;
   font-size: 13px;
   font-weight: 500;
 }
@@ -644,19 +710,19 @@ button.button {
   display: grid;
   gap: 6px;
   padding: 10px;
-  background: #fff;
-  border: 1px solid #e1e6eb;
+  background: #151515;
+  border: 1px solid #303030;
   border-radius: var(--radius);
 }
 
 .translation-draft h3 {
-  color: #374151;
+  color: #e5e7eb;
   font-size: 14px;
 }
 
 .translation-draft-text {
   white-space: pre-wrap;
-  color: #111827;
+  color: #f4f4f4;
   font-weight: 500;
 }
 
@@ -684,27 +750,121 @@ button.button {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  background: #f0f0f0;
+  background: #0d0d0d;
   border-radius: 4px;
 }
 
 .product-image-item small {
   overflow-wrap: anywhere;
-  color: #52606d;
+  color: #b8c0c8;
 }
 
 .notice {
   padding: 10px 12px;
-  background: #e8fff4;
+  color: #062c19;
+  background: #d9fbea;
   border: 1px solid #9be2bb;
   border-radius: var(--radius);
 }
 
 .error-box {
   padding: 10px 12px;
+  color: #3b0a0a;
   background: #fff0f0;
   border: 1px solid #e6a2a2;
   border-radius: var(--radius);
+}
+
+.admin-body .form-label,
+.admin-body .input-group-text {
+  color: #f4f4f4;
+  font-weight: 800;
+}
+
+.admin-body .input-group-text {
+  background: #202020;
+  border-color: #3a3a3a;
+}
+
+.admin-body .form-control {
+  min-height: 44px;
+  color: #f8f9fa;
+  background: #0d0d0d;
+  border-color: #3a3a3a;
+}
+
+.admin-body .form-control:focus {
+  color: #fff;
+  background: #101010;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 .2rem rgba(77, 216, 255, .18);
+}
+
+.admin-body .btn-link {
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.admin-search {
+  margin-bottom: 18px;
+}
+
+.admin-search-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-category-tabs {
+  gap: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.admin-category-tabs .nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  white-space: nowrap;
+  color: #d8d8d8;
+  background: #181818;
+  border: 1px solid #303030;
+  border-radius: var(--radius);
+}
+
+.admin-category-tabs .nav-link:hover {
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+
+.admin-category-tabs .nav-link.active {
+  color: #fff;
+  background: var(--red);
+  border-color: var(--red);
+}
+
+.admin-category-tabs .badge {
+  color: #111;
+  background: #f4f4f4;
+}
+
+.admin-product-table {
+  min-width: 900px;
+  margin-bottom: 0;
+}
+
+.admin-product-id {
+  color: #b8c0c8;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-product-thumb {
+  width: 72px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #050505;
+  border: 1px solid #2b2b2b;
+  border-radius: 6px;
 }
 
 .hp-field {

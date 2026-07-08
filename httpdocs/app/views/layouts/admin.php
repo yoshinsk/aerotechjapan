@@ -11,6 +11,7 @@ $pageTitle = ($title ?? 'CMS') . ' | AERO TECH CMS';
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($pageTitle) ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="<?= e(asset_url('css/site.css')) ?>">
 </head>
 <body class="admin-body <?= ($path ?? '') === '/admin/login' ? 'admin-login-body' : '' ?>">
@@ -33,6 +34,7 @@ $pageTitle = ($title ?? 'CMS') . ' | AERO TECH CMS';
 <main class="admin-main <?= ($path ?? '') === '/admin/login' ? 'login-main' : '' ?>">
     <?= $content ?>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?= e(asset_url('js/site.js')) ?>"></script>
 </body>
 </html>
