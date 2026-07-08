@@ -8,6 +8,18 @@ declare(strict_types=1);
 
 $imageService = new ImageService();
 $fileService = new FileUploadService();
+$legacyImageArchivePath = static fn(): string => HTTPDOCS_ROOT . '/storage/exports/aerotech-legacy-images.zip';
+$legacyImageArchiveInfo = static function () use ($legacyImageArchivePath): array {
+    $path = $legacyImageArchivePath();
+    if (!is_file($path)) {
+        return ['exists' => false, 'size' => 0, 'updated_at' => null];
+    }
+    return [
+        'exists' => true,
+        'size' => filesize($path) ?: 0,
+        'updated_at' => date('Y-m-d H:i:s', filemtime($path) ?: time()),
+    ];
+};
 $openaiConfigForCms = static function () use ($repo): array {
     $openaiConfig = config_value('openai', []);
     $savedApiKey = $repo->setting('openai_api_key');
@@ -89,11 +101,37 @@ if ($path === '/admin/price-list-ai-assist') {
     }
 }
 
+if ($path === '/admin/legacy-image-archive-download') {
+    $archivePath = $legacyImageArchivePath();
+    $exportsRoot = realpath(HTTPDOCS_ROOT . '/storage/exports');
+    $archiveRealPath = is_file($archivePath) ? realpath($archivePath) : false;
+    if (!$exportsRoot || !$archiveRealPath || !str_starts_with($archiveRealPath, $exportsRoot . DIRECTORY_SEPARATOR)) {
+        http_response_code(404);
+        admin_render('error', ['message' => '旧サイト画像アーカイブはまだ生成されていません。']);
+        return;
+    }
+
+    if (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    header_remove('Content-Type');
+    header('Content-Type: application/zip');
+    header('Content-Disposition: attachment; filename="aerotech-legacy-images.zip"');
+    header('Content-Length: ' . filesize($archiveRealPath));
+    header('Cache-Control: private, no-store');
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'HEAD') {
+        exit;
+    }
+    readfile($archiveRealPath);
+    exit;
+}
+
 if ($path === '/admin') {
     admin_render('dashboard', [
         'user' => $user,
         'counts' => $repo->counts(),
         'inquiries' => array_slice($repo->inquiries(), 0, 5),
+        'legacyImageArchive' => $legacyImageArchiveInfo(),
         'title' => 'ダッシュボード',
     ]);
     return;
