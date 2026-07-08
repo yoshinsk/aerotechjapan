@@ -17,8 +17,13 @@ $pageTitle = ($title ?? 'CMS') . ' | AERO TECH CMS';
 <body class="admin-body <?= ($path ?? '') === '/admin/login' ? 'admin-login-body' : '' ?>">
 <?php if (($path ?? '') !== '/admin/login'): ?>
 <aside class="admin-sidebar">
-    <a class="admin-logo" href="<?= e(url('/admin')) ?>">AERO TECH CMS</a>
-    <nav>
+    <div class="admin-sidebar-head">
+        <a class="admin-logo" href="<?= e(url('/admin')) ?>">AERO TECH CMS</a>
+        <button class="admin-menu-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav" aria-controls="adminNav" aria-expanded="false" aria-label="管理メニュー">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+    <nav id="adminNav" class="admin-nav collapse">
         <a href="<?= e(url('/admin')) ?>">ダッシュボード</a>
         <a href="<?= e(url('/admin/products')) ?>">商品</a>
         <a href="<?= e(url('/admin/categories')) ?>">カテゴリ</a>

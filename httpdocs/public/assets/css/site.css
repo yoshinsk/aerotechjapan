@@ -468,6 +468,7 @@ button.button {
 
 .admin-body {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   min-height: 100svh;
   background:
     linear-gradient(135deg, rgba(225, 45, 45, .16), transparent 34%),
@@ -480,12 +481,20 @@ button.button {
   top: 0;
   z-index: 10;
   display: grid;
+  min-width: 0;
   gap: 12px;
   padding: 14px;
   background: rgba(10, 10, 10, .96);
   color: #fff;
   border-bottom: 1px solid #2f2f2f;
   box-shadow: 0 18px 48px rgba(0, 0, 0, .28);
+}
+
+.admin-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .admin-logo {
@@ -499,10 +508,34 @@ button.button {
   line-height: 1.1;
 }
 
-.admin-sidebar nav {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
+.admin-menu-toggle {
+  display: inline-grid;
+  place-items: center;
+  gap: 4px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: #151515;
+  border: 1px solid #383838;
+  border-radius: var(--radius);
+}
+
+.admin-menu-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #fff;
+}
+
+.admin-menu-toggle:focus-visible {
+  outline: 3px solid rgba(77, 216, 255, .45);
+  outline-offset: 2px;
+}
+
+.admin-nav {
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #2f2f2f;
 }
 
 .admin-sidebar a {
@@ -512,13 +545,19 @@ button.button {
   color: #e8e8e8;
 }
 
-.admin-sidebar nav a:hover {
+.admin-nav.show,
+.admin-nav.collapsing {
+  display: grid;
+}
+
+.admin-nav a:hover {
   background: #191919;
   color: var(--cyan);
 }
 
 .admin-main {
   width: 100%;
+  min-width: 0;
   max-width: 1280px;
   margin: 0 auto;
   padding: clamp(18px, 3vw, 34px);
@@ -926,8 +965,22 @@ button.button {
     align-content: start;
   }
 
-  .admin-sidebar nav {
+  .admin-sidebar-head {
     display: grid;
+    align-items: start;
+  }
+
+  .admin-menu-toggle {
+    display: none;
+  }
+
+  .admin-sidebar .admin-nav,
+  .admin-sidebar .admin-nav.collapse:not(.show) {
+    display: grid;
+    height: auto !important;
+    visibility: visible;
+    padding-top: 0;
+    border-top: 0;
     overflow: visible;
   }
 
