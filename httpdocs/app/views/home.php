@@ -5,17 +5,56 @@
  */
 $heroProduct = $featuredProducts[0] ?? $latestProducts[0] ?? null;
 $heroImage = $heroProduct['main_image'] ?? 'img/news-img/newsimg20240809_1.jpg';
+$heroCalendarStatusShort = [
+    BusinessCalendar::STATUS_OPEN => '',
+    BusinessCalendar::STATUS_CLOSED => t('休', 'Closed'),
+    BusinessCalendar::STATUS_AM_CLOSED => t('午前休', 'AM'),
+    BusinessCalendar::STATUS_PM_CLOSED => t('午後休', 'PM'),
+];
 ?>
 <section class="hero">
     <img class="hero-bg" src="<?= e(media_url($heroImage)) ?>" alt="">
     <div class="hero-content">
-        <p class="eyebrow">AERO PARTS / BODY KIT / OEM</p>
-        <h1><?= e(localized($home ?? [], 'title', 'AERO TECH JAPAN')) ?></h1>
-        <p><?= e(excerpt(localized($home ?? [], 'body', t('エアロパーツ、ボディキット、OEM製作まで。現場で作り込む日本発のカスタムパーツブランドです。', 'Japanese aero parts, body kits, and OEM production built for real vehicles.')), 180)) ?></p>
-        <div class="actions">
-            <a class="button" href="<?= e(url('/products')) ?>"><?= e(t('製品を見る', 'View products')) ?></a>
-            <a class="button secondary" href="<?= e(url('/contact')) ?>"><?= e(t('問い合わせる', 'Contact us')) ?></a>
+        <div class="hero-copy">
+            <p class="eyebrow">AERO PARTS / BODY KIT / OEM</p>
+            <h1><?= e(localized($home ?? [], 'title', 'AERO TECH JAPAN')) ?></h1>
+            <p><?= e(excerpt(localized($home ?? [], 'body', t('エアロパーツ、ボディキット、OEM製作まで。現場で作り込む日本発のカスタムパーツブランドです。', 'Japanese aero parts, body kits, and OEM production built for real vehicles.')), 180)) ?></p>
+            <div class="actions">
+                <a class="button" href="<?= e(url('/products')) ?>"><?= e(t('製品を見る', 'View products')) ?></a>
+                <a class="button secondary" href="<?= e(url('/contact')) ?>"><?= e(t('問い合わせる', 'Contact us')) ?></a>
+            </div>
         </div>
+        <?php if (!empty($businessCalendarMonth)): ?>
+            <aside class="hero-calendar" aria-label="<?= e(t('今月の営業日カレンダー', 'This month business calendar')) ?>">
+                <div class="hero-calendar-head">
+                    <div>
+                        <p class="eyebrow">Business Calendar</p>
+                        <h2><?= e($businessCalendarMonth['label']) ?></h2>
+                    </div>
+                    <span><?= e(t('日曜・祝日定休', 'Closed Sundays / holidays')) ?></span>
+                </div>
+                <div class="hero-calendar-grid">
+                    <?php foreach (['日', '月', '火', '水', '木', '金', '土'] as $weekday): ?>
+                        <div class="hero-calendar-weekday"><?= e($weekday) ?></div>
+                    <?php endforeach; ?>
+                    <?php for ($blank = 0; $blank < (int)$businessCalendarMonth['first_weekday']; $blank++): ?>
+                        <div class="hero-calendar-day is-blank"></div>
+                    <?php endfor; ?>
+                    <?php foreach ($businessCalendarMonth['days'] as $day): ?>
+                        <?php $shortStatus = $heroCalendarStatusShort[$day['status']] ?? ''; ?>
+                        <div class="hero-calendar-day status-<?= e($day['status']) ?> <?= $day['is_today'] ? 'is-today' : '' ?>">
+                            <span class="hero-calendar-number"><?= e($day['day']) ?></span>
+                            <?php if ($shortStatus !== ''): ?><span class="hero-calendar-status"><?= e($shortStatus) ?></span><?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <div class="hero-calendar-legend">
+                    <span><i class="legend-open"></i><?= e(t('営業日', 'Open')) ?></span>
+                    <span><i class="legend-closed"></i><?= e(t('休日', 'Closed')) ?></span>
+                    <span><i class="legend-half"></i><?= e(t('午前休・午後休', 'Half day')) ?></span>
+                </div>
+            </aside>
+        <?php endif; ?>
     </div>
 </section>
 

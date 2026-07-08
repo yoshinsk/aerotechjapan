@@ -137,8 +137,16 @@ body.site-body {
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 980px;
+  display: grid;
+  gap: clamp(22px, 4vw, 42px);
+  width: min(100%, 1480px);
+  min-height: calc(100svh - 72px);
+  align-content: end;
   padding: clamp(88px, 14vw, 140px) clamp(18px, 4vw, 56px) 48px;
+}
+
+.hero-copy {
+  max-width: 980px;
 }
 
 .eyebrow {
@@ -166,6 +174,134 @@ body.site-body {
   max-width: 720px;
   color: #e8e8e8;
   font-size: clamp(15px, 2.2vw, 19px);
+}
+
+.hero-calendar {
+  width: min(100%, 430px);
+  padding: clamp(14px, 2vw, 20px);
+  color: var(--aero-text);
+  background: linear-gradient(180deg, rgba(9, 9, 9, .78), rgba(9, 9, 9, .62));
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 8px;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, .42);
+  backdrop-filter: blur(12px);
+}
+
+.hero-calendar-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.hero-calendar-head .eyebrow {
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.hero-calendar-head h2 {
+  margin: 0;
+  font-size: clamp(22px, 4vw, 34px);
+}
+
+.hero-calendar-head > span {
+  color: var(--aero-muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.hero-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.hero-calendar-weekday {
+  color: #d8d8d8;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.hero-calendar-day {
+  display: grid;
+  min-height: 38px;
+  align-content: center;
+  justify-items: center;
+  gap: 1px;
+  padding: 5px 2px;
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 6px;
+}
+
+.hero-calendar-day.is-blank {
+  visibility: hidden;
+}
+
+.hero-calendar-number {
+  font-weight: 900;
+  line-height: 1;
+}
+
+.hero-calendar-status {
+  color: #ffd0d0;
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hero-calendar-day.status-closed {
+  background: rgba(225, 45, 45, .25);
+  border-color: rgba(225, 45, 45, .58);
+}
+
+.hero-calendar-day.status-am_closed,
+.hero-calendar-day.status-pm_closed {
+  background: rgba(77, 216, 255, .16);
+  border-color: rgba(77, 216, 255, .5);
+}
+
+.hero-calendar-day.is-today {
+  outline: 2px solid var(--aero-cyan);
+  outline-offset: 1px;
+}
+
+.hero-calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  color: #d0d0d0;
+  font-size: 11px;
+}
+
+.hero-calendar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hero-calendar-legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.legend-open {
+  background: rgba(255, 255, 255, .45);
+}
+
+.legend-closed {
+  background: var(--aero-red);
+}
+
+.legend-half {
+  background: var(--aero-cyan);
 }
 
 .actions {
@@ -578,6 +714,16 @@ button.button {
 }
 
 @media (min-width: 992px) {
+  .hero-content {
+    grid-template-columns: minmax(0, 1fr) minmax(330px, 430px);
+    align-items: end;
+  }
+
+  .hero-calendar {
+    justify-self: end;
+    margin-bottom: 10px;
+  }
+
   .site-nav {
     border-top: 0;
   }
@@ -591,5 +737,65 @@ button.button {
   .site-nav .nav-link {
     padding: 0;
     border-bottom: 0;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .hero-content {
+    gap: 18px;
+    padding-top: 72px;
+    padding-bottom: 24px;
+  }
+
+  .hero h1 {
+    font-size: clamp(38px, 11vw, 46px);
+  }
+
+  .hero p {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .actions {
+    margin-top: 20px;
+  }
+
+  .hero-calendar {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .hero-calendar-head {
+    align-items: start;
+    margin-bottom: 10px;
+  }
+
+  .hero-calendar-head .eyebrow {
+    font-size: 10px;
+  }
+
+  .hero-calendar-head h2 {
+    font-size: 22px;
+  }
+
+  .hero-calendar-head > span {
+    max-width: 120px;
+    font-size: 11px;
+  }
+
+  .hero-calendar-day {
+    min-height: 28px;
+    padding-block: 3px;
+    border-radius: 5px;
+  }
+
+  .hero-calendar-status {
+    font-size: 9px;
+  }
+
+  .hero-calendar-legend {
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 10px;
   }
 }

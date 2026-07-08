@@ -20,6 +20,8 @@ if ($path === '/') {
         'featuredProducts' => $repo->products(['featured' => true], 8),
         'latestProducts' => $repo->products([], 8),
         'newsPosts' => $repo->news(5),
+        'businessCalendarMonth' => (new BusinessCalendar($repo))->months(1)[0] ?? null,
+        'businessStatusLabels' => BusinessCalendar::statusLabels(),
         'title' => config_value('app.name'),
     ]);
     return;
