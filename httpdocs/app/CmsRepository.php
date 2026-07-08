@@ -35,6 +35,7 @@ final class CmsRepository
             'products' => (int)$this->pdo->query('SELECT COUNT(*) FROM products')->fetchColumn(),
             'categories' => (int)$this->pdo->query('SELECT COUNT(*) FROM categories')->fetchColumn(),
             'news' => (int)$this->pdo->query('SELECT COUNT(*) FROM news_posts')->fetchColumn(),
+            'price_lists' => (int)$this->pdo->query('SELECT COUNT(*) FROM price_lists')->fetchColumn(),
             'inquiries' => (int)$this->pdo->query('SELECT COUNT(*) FROM inquiries')->fetchColumn(),
         ];
     }
@@ -80,7 +81,8 @@ final class CmsRepository
         }
 
         $sql = 'SELECT p.*, c.slug AS category_slug, c.name_ja AS category_name_ja, c.name_en AS category_name_en,
-                (SELECT path FROM product_images WHERE product_id = p.id ORDER BY is_main DESC, sort_order, id LIMIT 1) AS main_image
+                (SELECT COALESCE(NULLIF(large_path, ""), path) FROM product_images WHERE product_id = p.id ORDER BY is_main DESC, sort_order, id LIMIT 1) AS main_image,
+                (SELECT COALESCE(NULLIF(thumb_path, ""), NULLIF(large_path, ""), path) FROM product_images WHERE product_id = p.id ORDER BY is_main DESC, sort_order, id LIMIT 1) AS main_image_thumb
                 FROM products p LEFT JOIN categories c ON c.id = p.category_id
                 WHERE ' . implode(' AND ', $where) . '
                 ORDER BY p.is_featured DESC, p.sort_order, p.updated_at DESC, p.id DESC';
@@ -93,7 +95,7 @@ final class CmsRepository
         return $stmt->fetchAll();
     }
 
-    public function adminProducts(?string $keyword = null, string $categoryFilter = 'all'): array
+    public function adminProducts(?string $keyword = null, string $categoryFilter = 'all', string $statusFilter = 'active'): array
     {
         $params = [];
         $where = [];
@@ -112,10 +114,16 @@ final class CmsRepository
             $params[] = (int)$categoryFilter;
         }
 
+        if ($statusFilter === 'deleted') {
+            $where[] = 'p.status = "deleted"';
+        } elseif ($statusFilter !== 'all') {
+            $where[] = 'p.status <> "deleted"';
+        }
+
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
         $stmt = $this->pdo->prepare(
             "SELECT p.*, c.name_ja AS category_name_ja,
-                    (SELECT path FROM product_images WHERE product_id = p.id ORDER BY is_main DESC, sort_order, id LIMIT 1) AS main_image
+                    (SELECT COALESCE(NULLIF(thumb_path, ''), NULLIF(large_path, ''), path) FROM product_images WHERE product_id = p.id ORDER BY is_main DESC, sort_order, id LIMIT 1) AS main_image
              FROM products p LEFT JOIN categories c ON c.id = p.category_id
              {$whereSql}
              ORDER BY p.updated_at DESC, p.id DESC
@@ -125,14 +133,18 @@ final class CmsRepository
         return $stmt->fetchAll();
     }
 
-    public function adminProductCategoryCounts(): array
+    public function adminProductCategoryCounts(string $statusFilter = 'active'): array
     {
         $counts = [
             'all' => 0,
             'uncategorized' => 0,
             'categories' => [],
         ];
-        $rows = $this->pdo->query('SELECT category_id, COUNT(*) AS total FROM products GROUP BY category_id')->fetchAll();
+        $where = $statusFilter === 'deleted' ? 'WHERE status = "deleted"' : 'WHERE status <> "deleted"';
+        if ($statusFilter === 'all') {
+            $where = '';
+        }
+        $rows = $this->pdo->query("SELECT category_id, COUNT(*) AS total FROM products {$where} GROUP BY category_id")->fetchAll();
         foreach ($rows as $row) {
             $total = (int)$row['total'];
             $counts['all'] += $total;
@@ -170,6 +182,14 @@ final class CmsRepository
         $stmt = $this->pdo->prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY is_main DESC, sort_order, id');
         $stmt->execute([$productId]);
         return $stmt->fetchAll();
+    }
+
+    public function productImage(int $imageId, int $productId): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM product_images WHERE id = ? AND product_id = ? LIMIT 1');
+        $stmt->execute([$imageId, $productId]);
+        $row = $stmt->fetch();
+        return $row ?: null;
     }
 
     public function deleteProductImage(int $imageId, int $productId): bool
@@ -232,13 +252,86 @@ final class CmsRepository
         }
     }
 
-    public function addProductImage(int $productId, string $path, string $alt = '', bool $main = false): void
+    public function updateProductImages(int $productId, array $orderedIds, int $mainImageId, array $alts): void
+    {
+        $orderedIds = array_values(array_filter(array_map('intval', $orderedIds), static fn(int $id): bool => $id > 0));
+        if (!in_array($mainImageId, $orderedIds, true)) {
+            $mainImageId = $orderedIds[0] ?? 0;
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $this->pdo->prepare('UPDATE product_images SET is_main = 0 WHERE product_id = ?')->execute([$productId]);
+            $sort = 10;
+            $stmt = $this->pdo->prepare(
+                'UPDATE product_images
+                 SET sort_order = ?, is_main = ?, alt_ja = ?, alt_en = ?
+                 WHERE id = ? AND product_id = ?'
+            );
+            foreach ($orderedIds as $imageId) {
+                $alt = trim((string)($alts[$imageId] ?? ''));
+                $stmt->execute([$sort, $imageId === $mainImageId ? 1 : 0, $alt, $alt, $imageId, $productId]);
+                $sort += 10;
+            }
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function updateProductImageFiles(int $imageId, int $productId, array $paths): void
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO product_images (product_id, path, alt_ja, alt_en, source_type, sort_order, is_main)
-             VALUES (?, ?, ?, ?, "upload", 999, ?)'
+            'UPDATE product_images
+             SET path = ?, original_path = ?, large_path = ?, thumb_path = ?, source_type = "upload"
+             WHERE id = ? AND product_id = ?'
         );
-        $stmt->execute([$productId, $path, $alt, $alt, $main ? 1 : 0]);
+        $stmt->execute([
+            $paths['path'] ?? $paths['large_path'] ?? '',
+            $paths['original_path'] ?? '',
+            $paths['large_path'] ?? $paths['path'] ?? '',
+            $paths['thumb_path'] ?? '',
+            $imageId,
+            $productId,
+        ]);
+    }
+
+    public function addProductImage(int $productId, string|array $path, string $alt = '', bool $main = false): void
+    {
+        $paths = is_array($path) ? $path : ['path' => $path, 'large_path' => $path];
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO product_images (product_id, path, original_path, large_path, thumb_path, alt_ja, alt_en, source_type, sort_order, is_main)
+             VALUES (?, ?, ?, ?, ?, ?, ?, "upload", 999, ?)'
+        );
+        $stmt->execute([
+            $productId,
+            $paths['path'] ?? $paths['large_path'] ?? '',
+            $paths['original_path'] ?? '',
+            $paths['large_path'] ?? $paths['path'] ?? '',
+            $paths['thumb_path'] ?? '',
+            $alt,
+            $alt,
+            $main ? 1 : 0,
+        ]);
+    }
+
+    public function softDeleteProduct(int $productId): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE products SET status = "deleted", updated_at = NOW() WHERE id = ?');
+        $stmt->execute([$productId]);
+    }
+
+    public function restoreProduct(int $productId): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE products SET status = "draft", updated_at = NOW() WHERE id = ? AND status = "deleted"');
+        $stmt->execute([$productId]);
+    }
+
+    public function permanentlyDeleteProduct(int $productId): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM products WHERE id = ?');
+        $stmt->execute([$productId]);
     }
 
     public function news(?int $limit = null, bool $activeOnly = true): array
@@ -331,11 +424,12 @@ final class CmsRepository
 
     public function saveCategory(array $data): int
     {
-        $fields = ['slug', 'name_ja', 'name_en', 'description_ja', 'description_en', 'sort_order', 'is_active'];
+        $fields = ['slug', 'name_ja', 'name_en', 'description_ja', 'description_en', 'logo_path', 'sort_order', 'is_active'];
         $values = [];
         foreach ($fields as $field) {
             $values[$field] = $data[$field] ?? null;
         }
+        $values['logo_path'] = $values['logo_path'] ?? '';
         if (!empty($data['id'])) {
             $assignments = implode(', ', array_map(fn($field) => "{$field} = :{$field}", $fields));
             $values['id'] = (int)$data['id'];
@@ -346,6 +440,101 @@ final class CmsRepository
         $stmt = $this->pdo->prepare('INSERT INTO categories (' . implode(', ', $fields) . ') VALUES (:' . implode(', :', $fields) . ')');
         $stmt->execute($values);
         return (int)$this->pdo->lastInsertId();
+    }
+
+    public function priceLists(bool $activeOnly = true): array
+    {
+        $where = $activeOnly ? 'WHERE pl.is_active = 1' : '';
+        return $this->pdo->query(
+            "SELECT pl.*, c.name_ja AS category_name_ja, c.name_en AS category_name_en, c.logo_path AS category_logo_path
+             FROM price_lists pl LEFT JOIN categories c ON c.id = pl.category_id
+             {$where}
+             ORDER BY COALESCE(c.sort_order, 9999), pl.sort_order, pl.published_at DESC, pl.id DESC"
+        )->fetchAll();
+    }
+
+    public function priceListById(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM price_lists WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public function savePriceList(array $data): int
+    {
+        $fields = ['category_id', 'title_ja', 'title_en', 'pdf_path', 'sort_order', 'is_active', 'published_at'];
+        $values = [];
+        foreach ($fields as $field) {
+            $values[$field] = $data[$field] ?? null;
+        }
+
+        if (!empty($data['id'])) {
+            $assignments = implode(', ', array_map(fn($field) => "{$field} = :{$field}", $fields));
+            $values['id'] = (int)$data['id'];
+            $stmt = $this->pdo->prepare("UPDATE price_lists SET {$assignments}, updated_at = NOW() WHERE id = :id");
+            $stmt->execute($values);
+            return (int)$data['id'];
+        }
+
+        $stmt = $this->pdo->prepare('INSERT INTO price_lists (' . implode(', ', $fields) . ') VALUES (:' . implode(', :', $fields) . ')');
+        $stmt->execute($values);
+        return (int)$this->pdo->lastInsertId();
+    }
+
+    public function deletePriceList(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM price_lists WHERE id = ?');
+        $stmt->execute([$id]);
+        return $stmt->rowCount() > 0;
+    }
+
+    public function businessDayExceptions(string $from, string $to): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM business_day_exceptions WHERE business_date BETWEEN ? AND ? ORDER BY business_date'
+        );
+        $stmt->execute([$from, $to]);
+        $rows = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $rows[(string)$row['business_date']] = $row;
+        }
+        return $rows;
+    }
+
+    public function saveBusinessDayExceptions(array $statuses, array $notesJa = [], array $notesEn = []): void
+    {
+        $allowed = [
+            BusinessCalendar::STATUS_OPEN,
+            BusinessCalendar::STATUS_CLOSED,
+            BusinessCalendar::STATUS_AM_CLOSED,
+            BusinessCalendar::STATUS_PM_CLOSED,
+        ];
+        $upsert = $this->pdo->prepare(
+            'INSERT INTO business_day_exceptions (business_date, status, note_ja, note_en)
+             VALUES (?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE status = VALUES(status), note_ja = VALUES(note_ja), note_en = VALUES(note_en)'
+        );
+        $delete = $this->pdo->prepare('DELETE FROM business_day_exceptions WHERE business_date = ?');
+        foreach ($statuses as $date => $status) {
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$date)) {
+                continue;
+            }
+            $status = trim((string)$status);
+            if ($status === BusinessCalendar::STATUS_DEFAULT) {
+                $delete->execute([$date]);
+                continue;
+            }
+            if (!in_array($status, $allowed, true)) {
+                continue;
+            }
+            $upsert->execute([
+                $date,
+                $status,
+                trim((string)($notesJa[$date] ?? '')),
+                trim((string)($notesEn[$date] ?? '')),
+            ]);
+        }
     }
 
     public function saveInquiry(array $data): int

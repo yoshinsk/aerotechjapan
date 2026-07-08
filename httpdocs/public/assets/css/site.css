@@ -859,6 +859,24 @@ button.button {
   margin-bottom: 12px;
 }
 
+.admin-status-tabs {
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.admin-status-tabs .nav-link {
+  color: #d8d8d8;
+  background: #181818;
+  border: 1px solid #303030;
+  border-radius: var(--radius);
+}
+
+.admin-status-tabs .nav-link.active {
+  color: #fff;
+  background: var(--red);
+  border-color: var(--red);
+}
+
 .admin-category-tabs .nav-link {
   display: inline-flex;
   align-items: center;
@@ -900,10 +918,146 @@ button.button {
 .admin-product-thumb {
   width: 72px;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
   background: #050505;
   border: 1px solid #2b2b2b;
   border-radius: 6px;
+}
+
+.product-image-sort-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.product-image-item {
+  position: relative;
+}
+
+.product-image-item.is-dragging {
+  opacity: .55;
+}
+
+.drag-handle {
+  width: 100%;
+  min-height: 36px;
+  color: #fff;
+  background: #202020;
+  border: 1px solid #3a3a3a;
+  border-radius: var(--radius);
+  cursor: grab;
+}
+
+.product-image-item img {
+  object-fit: contain;
+}
+
+.image-delete-check {
+  color: #ffb4b4;
+}
+
+.danger-zone {
+  margin-top: 18px;
+  border-color: rgba(225, 45, 45, .54);
+}
+
+.button.danger {
+  background: #b91c1c;
+  border-color: #ef4444;
+}
+
+.brand-logo-preview,
+.admin-brand-logo-thumb {
+  background: #fff;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+}
+
+.brand-logo-preview {
+  display: grid;
+  gap: 8px;
+  width: fit-content;
+  padding: 10px;
+  color: #111;
+}
+
+.brand-logo-preview img,
+.admin-brand-logo-thumb {
+  width: 140px;
+  max-height: 72px;
+  object-fit: contain;
+}
+
+.calendar-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-calendar-grid {
+  margin: 12px 0 18px;
+}
+
+.business-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.calendar-weekday,
+.calendar-day {
+  min-height: 58px;
+  padding: 7px;
+  color: #f4f4f4;
+  background: #141414;
+  border: 1px solid #303030;
+  border-radius: 6px;
+}
+
+.calendar-weekday {
+  min-height: auto;
+  color: #b8c0c8;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+button.calendar-day {
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendar-day.is-blank {
+  visibility: hidden;
+}
+
+.calendar-day.is-selected {
+  outline: 3px solid var(--cyan);
+  outline-offset: 1px;
+}
+
+.calendar-day-number {
+  display: block;
+  font-weight: 900;
+}
+
+.calendar-day-status,
+.calendar-day-note {
+  display: block;
+  color: #b8c0c8;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.calendar-day.status-closed {
+  background: rgba(225, 45, 45, .22);
+  border-color: rgba(225, 45, 45, .64);
+}
+
+.calendar-day.status-am_closed,
+.calendar-day.status-pm_closed {
+  background: rgba(77, 216, 255, .13);
+  border-color: rgba(77, 216, 255, .48);
 }
 
 .hp-field {

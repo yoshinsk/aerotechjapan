@@ -90,6 +90,27 @@ function media_url(?string $path): string
     return url('/media.php?path=' . rawurlencode($path));
 }
 
+function image_variant_path(array $image, string $variant = 'large'): string
+{
+    $key = $variant . '_path';
+    $path = trim((string)($image[$key] ?? ''));
+    if ($path !== '') {
+        return $path;
+    }
+    if ($variant === 'large') {
+        $path = trim((string)($image['path'] ?? ''));
+        if ($path !== '') {
+            return $path;
+        }
+    }
+    return trim((string)($image['path'] ?? ''));
+}
+
+function image_variant_url(array $image, string $variant = 'large'): string
+{
+    return media_url(image_variant_path($image, $variant));
+}
+
 function redirect_to(string $path): never
 {
     header('Location: ' . url($path), true, 302);

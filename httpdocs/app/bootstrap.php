@@ -46,6 +46,8 @@ require_once APP_ROOT . '/Database.php';
 require_once APP_ROOT . '/Auth.php';
 require_once APP_ROOT . '/CmsRepository.php';
 require_once APP_ROOT . '/ImageService.php';
+require_once APP_ROOT . '/FileUploadService.php';
+require_once APP_ROOT . '/BusinessCalendar.php';
 require_once APP_ROOT . '/Mailer.php';
 require_once APP_ROOT . '/OpenAITranslator.php';
 require_once APP_ROOT . '/render.php';

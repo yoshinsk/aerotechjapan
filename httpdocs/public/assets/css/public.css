@@ -275,7 +275,13 @@ button.button {
   color: inherit;
 }
 
-.product-card .card-img-top,
+.product-card .card-img-top {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  background: #151515;
+}
+
 .news-card .card-img-top {
   width: 100%;
   aspect-ratio: 4 / 3;
@@ -299,9 +305,13 @@ button.button {
 }
 
 .gallery-main {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: min(72svh, 760px);
+  margin: 0 auto;
+  object-fit: contain;
   background: #111;
   border: 1px solid var(--aero-line);
   border-radius: 8px;
@@ -324,7 +334,8 @@ button.button {
 .gallery-thumbs img {
   width: 100%;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
+  background: #111;
 }
 
 .spec-table {
@@ -382,6 +393,124 @@ button.button {
 .rich-content img {
   border: 1px solid var(--aero-line);
   border-radius: 8px;
+}
+
+.price-list-groups,
+.business-calendar-months {
+  display: grid;
+  gap: 24px;
+}
+
+.price-list-group,
+.business-calendar-section {
+  display: grid;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.price-list-brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.price-list-brand img {
+  width: min(180px, 48vw);
+  max-height: 80px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.price-list-card {
+  display: grid;
+  gap: 8px;
+  height: 100%;
+  padding: 18px;
+  background: var(--aero-surface);
+  border: 1px solid var(--aero-line);
+  border-radius: 8px;
+}
+
+.price-list-card:hover,
+.price-list-card:focus {
+  color: var(--aero-text);
+  border-color: var(--aero-cyan);
+}
+
+.price-list-card span {
+  font-weight: 800;
+}
+
+.price-list-card time {
+  color: var(--aero-muted);
+  font-size: 13px;
+}
+
+.business-calendar-month {
+  display: grid;
+  gap: 12px;
+}
+
+.business-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.calendar-weekday,
+.calendar-day {
+  min-height: 54px;
+  padding: 7px;
+  background: var(--aero-surface);
+  border: 1px solid var(--aero-line);
+  border-radius: 6px;
+}
+
+.calendar-weekday {
+  min-height: auto;
+  color: var(--aero-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.calendar-day {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+}
+
+.calendar-day.is-blank {
+  visibility: hidden;
+}
+
+.calendar-day-number {
+  font-weight: 800;
+}
+
+.calendar-day-status,
+.calendar-day-note {
+  color: var(--aero-muted);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.calendar-day.status-closed {
+  background: rgba(225, 45, 45, .22);
+  border-color: rgba(225, 45, 45, .64);
+}
+
+.calendar-day.status-am_closed,
+.calendar-day.status-pm_closed {
+  background: rgba(77, 216, 255, .13);
+  border-color: rgba(77, 216, 255, .48);
+}
+
+.calendar-day.is-today {
+  outline: 2px solid var(--aero-cyan);
+  outline-offset: 1px;
 }
 
 .field label {

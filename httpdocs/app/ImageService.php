@@ -9,12 +9,17 @@ declare(strict_types=1);
 final class ImageService
 {
     private array $sizes = [
-        'large' => [1600, 1100],
-        'card' => [900, 620],
-        'thumb' => [420, 300],
+        'large' => [1600, 1200],
+        'thumb' => [480, 360],
     ];
 
     public function storeUpload(array $file, string $directory = 'products'): ?string
+    {
+        $stored = $this->storeUploadSet($file, $directory);
+        return $stored['large_path'] ?? null;
+    }
+
+    public function storeUploadSet(array $file, string $directory = 'products'): ?array
     {
         if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
             return null;
@@ -31,6 +36,7 @@ final class ImageService
             throw new RuntimeException('対応していない画像形式です。');
         }
 
+        $extension = $this->extensionForType((int)$info[2]);
         $datePath = date('Y/m');
         $safeName = pathinfo((string)$file['name'], PATHINFO_FILENAME);
         $safeName = slugify($safeName);
@@ -41,14 +47,26 @@ final class ImageService
             throw new RuntimeException('アップロード先を作成できません。');
         }
 
+        $originalPath = "{$relativeDir}/{$baseName}-original.{$extension}";
+        $this->storeOriginal($tmp, PUBLIC_ROOT . '/' . $originalPath);
+
+        $paths = [
+            'original_path' => $originalPath,
+        ];
         foreach ($this->sizes as $suffix => [$maxWidth, $maxHeight]) {
             $resized = $this->resizeContain($source, imagesx($source), imagesy($source), $maxWidth, $maxHeight);
-            $this->saveImage($resized, "{$absoluteDir}/{$baseName}-{$suffix}.jpg");
+            $paths[$suffix . '_path'] = "{$relativeDir}/{$baseName}-{$suffix}.jpg";
+            $this->saveImage($resized, PUBLIC_ROOT . '/' . $paths[$suffix . '_path']);
             imagedestroy($resized);
         }
         imagedestroy($source);
 
-        return "{$relativeDir}/{$baseName}-large.jpg";
+        return [
+            'path' => $paths['large_path'],
+            'original_path' => $paths['original_path'],
+            'large_path' => $paths['large_path'],
+            'thumb_path' => $paths['thumb_path'],
+        ];
     }
 
     private function createImageResource(string $path, int $type): GdImage|false
@@ -59,6 +77,25 @@ final class ImageService
             IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? imagecreatefromwebp($path) : false,
             default => false,
         };
+    }
+
+    private function extensionForType(int $type): string
+    {
+        return match ($type) {
+            IMAGETYPE_JPEG => 'jpg',
+            IMAGETYPE_PNG => 'png',
+            IMAGETYPE_WEBP => 'webp',
+            default => throw new RuntimeException('対応していない画像形式です。'),
+        };
+    }
+
+    private function storeOriginal(string $tmp, string $path): void
+    {
+        $stored = is_uploaded_file($tmp) ? move_uploaded_file($tmp, $path) : copy($tmp, $path);
+        if (!$stored) {
+            throw new RuntimeException('オリジナル画像を保存できません。');
+        }
+        chmod($path, 0664);
     }
 
     private function resizeContain(GdImage $source, int $sourceWidth, int $sourceHeight, int $maxWidth, int $maxHeight): GdImage
@@ -75,5 +112,34 @@ final class ImageService
     {
         imageinterlace($image, true);
         imagejpeg($image, $path, 84);
+        chmod($path, 0664);
+    }
+
+    public function deleteProductImageFiles(array $image): void
+    {
+        $paths = array_unique(array_filter([
+            $image['path'] ?? '',
+            $image['original_path'] ?? '',
+            $image['large_path'] ?? '',
+            $image['thumb_path'] ?? '',
+        ]));
+        foreach ($paths as $path) {
+            $this->deletePublicUpload((string)$path);
+        }
+    }
+
+    public function deletePublicUpload(string $path): void
+    {
+        $path = trim($path);
+        if ($path === '' || !str_starts_with($path, 'uploads/')) {
+            return;
+        }
+        $absolute = PUBLIC_ROOT . '/' . $path;
+        $realUploads = realpath(PUBLIC_ROOT . '/uploads');
+        $realFile = is_file($absolute) ? realpath($absolute) : false;
+        if (!$realUploads || !$realFile || !str_starts_with($realFile, $realUploads . DIRECTORY_SEPARATOR)) {
+            return;
+        }
+        @unlink($realFile);
     }
 }

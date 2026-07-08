@@ -8,6 +8,7 @@ $keyword = trim((string)($keyword ?? ''));
 $categories = $categories ?? [];
 $categoryCounts = $categoryCounts ?? ['all' => count($products), 'uncategorized' => 0, 'categories' => []];
 $activeCategory = (string)($activeCategory ?? 'all');
+$statusFilter = (string)($statusFilter ?? 'active');
 $validCategoryKeys = ['all' => true, 'uncategorized' => true];
 foreach ($categories as $category) {
     $validCategoryKeys[(string)$category['id']] = true;
@@ -15,13 +16,17 @@ foreach ($categories as $category) {
 if (!isset($validCategoryKeys[$activeCategory])) {
     $activeCategory = 'all';
 }
-$buildProductsUrl = static function (string $category, string $search = ''): string {
+$buildProductsUrl = static function (string $category, string $search = '', ?string $status = null) use ($statusFilter): string {
     $params = [];
     if ($category !== 'all') {
         $params['category'] = $category;
     }
     if ($search !== '') {
         $params['q'] = $search;
+    }
+    $status = $status ?? $statusFilter;
+    if ($status !== 'active') {
+        $params['status'] = $status;
     }
     $query = http_build_query($params);
     return url('/admin/products' . ($query !== '' ? '?' . $query : ''));
@@ -33,6 +38,7 @@ $uncategorizedCount = (int)($categoryCounts['uncategorized'] ?? 0);
 $statusLabels = [
     'published' => ['公開', 'text-bg-success'],
     'draft' => ['下書き', 'text-bg-secondary'],
+    'deleted' => ['削除済み', 'text-bg-danger'],
 ];
 ?>
 <header class="admin-page-head">
@@ -44,9 +50,19 @@ $statusLabels = [
 </header>
 
 <section class="admin-panel admin-products-panel">
+    <?php if (isset($_GET['deleted'])): ?><div class="notice">商品を削除済みに移動しました。</div><?php endif; ?>
+    <?php if (isset($_GET['permanent_deleted'])): ?><div class="notice">商品を完全削除しました。</div><?php endif; ?>
+    <ul class="nav nav-pills admin-status-tabs" aria-label="商品状態">
+        <li class="nav-item"><a class="nav-link <?= $statusFilter === 'active' ? 'active' : '' ?>" href="<?= e($buildProductsUrl($activeCategory, $keyword, 'active')) ?>">通常商品</a></li>
+        <li class="nav-item"><a class="nav-link <?= $statusFilter === 'deleted' ? 'active' : '' ?>" href="<?= e($buildProductsUrl($activeCategory, $keyword, 'deleted')) ?>">削除済み</a></li>
+        <li class="nav-item"><a class="nav-link <?= $statusFilter === 'all' ? 'active' : '' ?>" href="<?= e($buildProductsUrl($activeCategory, $keyword, 'all')) ?>">全件</a></li>
+    </ul>
     <form class="admin-search row g-2 align-items-end" method="get" action="<?= e(url('/admin/products')) ?>">
         <?php if ($activeCategory !== 'all'): ?>
             <input type="hidden" name="category" value="<?= e($activeCategory) ?>">
+        <?php endif; ?>
+        <?php if ($statusFilter !== 'active'): ?>
+            <input type="hidden" name="status" value="<?= e($statusFilter) ?>">
         <?php endif; ?>
         <div class="col-12 col-lg">
             <label class="form-label" for="product-search">検索</label>

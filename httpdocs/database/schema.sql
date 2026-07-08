@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS categories (
     name_en VARCHAR(190) NOT NULL DEFAULT '',
     description_ja TEXT NULL,
     description_en TEXT NULL,
+    logo_path VARCHAR(500) NOT NULL DEFAULT '',
     sort_order INT NOT NULL DEFAULT 100,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     PRIMARY KEY (id),
@@ -56,6 +57,9 @@ CREATE TABLE IF NOT EXISTS product_images (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     product_id INT UNSIGNED NOT NULL,
     path VARCHAR(500) NOT NULL,
+    original_path VARCHAR(500) NOT NULL DEFAULT '',
+    large_path VARCHAR(500) NOT NULL DEFAULT '',
+    thumb_path VARCHAR(500) NOT NULL DEFAULT '',
     alt_ja VARCHAR(255) NOT NULL DEFAULT '',
     alt_en VARCHAR(255) NOT NULL DEFAULT '',
     source_type VARCHAR(20) NOT NULL DEFAULT 'legacy',
@@ -131,6 +135,33 @@ CREATE TABLE IF NOT EXISTS inquiries (
     KEY idx_inquiries_product (product_id),
     KEY idx_inquiries_created (created_at),
     CONSTRAINT fk_inquiries_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS price_lists (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    category_id INT UNSIGNED NULL,
+    title_ja VARCHAR(255) NOT NULL,
+    title_en VARCHAR(255) NOT NULL DEFAULT '',
+    pdf_path VARCHAR(500) NOT NULL,
+    sort_order INT NOT NULL DEFAULT 100,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    published_at DATE NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_price_lists_category (category_id),
+    KEY idx_price_lists_active (is_active),
+    CONSTRAINT fk_price_lists_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS business_day_exceptions (
+    business_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'closed',
+    note_ja VARCHAR(255) NOT NULL DEFAULT '',
+    note_en VARCHAR(255) NOT NULL DEFAULT '',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (business_date),
+    KEY idx_business_day_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS settings (

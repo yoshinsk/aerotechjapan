@@ -73,6 +73,14 @@ if ($path === '/products') {
     return;
 }
 
+if ($path === '/price-lists') {
+    render('price_lists', [
+        'priceLists' => $repo->priceLists(),
+        'title' => t('価格表リスト', 'Price Lists'),
+    ]);
+    return;
+}
+
 if (preg_match('#^/category/([^/]+)$#', $path, $matches)) {
     $category = $repo->categoryBySlug($matches[1]);
     if (!$category) {
@@ -188,7 +196,12 @@ if (preg_match('#^/page/([^/]+)$#', $path, $matches)) {
         render('error', ['message' => 'ページが見つかりません。']);
         return;
     }
-    render('page', ['page' => $page, 'title' => localized($page, 'title')]);
+    $params = ['page' => $page, 'title' => localized($page, 'title')];
+    if ($matches[1] === 'about') {
+        $params['businessCalendarMonths'] = (new BusinessCalendar($repo))->months(2);
+        $params['businessStatusLabels'] = BusinessCalendar::statusLabels();
+    }
+    render('page', $params);
     return;
 }
 

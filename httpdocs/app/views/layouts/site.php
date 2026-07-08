@@ -28,6 +28,7 @@ $pageTitle = ($title ?? config_value('app.name')) . ' | ' . config_value('app.na
         <nav id="siteNav" class="collapse navbar-collapse site-nav" data-nav>
             <div class="navbar-nav ms-lg-auto">
                 <a class="nav-link" href="<?= e(url('/products')) ?>"><?= e(t('製品', 'Products')) ?></a>
+                <a class="nav-link" href="<?= e(url('/price-lists')) ?>"><?= e(t('価格表リスト', 'Price Lists')) ?></a>
                 <a class="nav-link" href="<?= e(url('/news')) ?>"><?= e(t('ニュース', 'News')) ?></a>
                 <a class="nav-link" href="<?= e(url('/page/about')) ?>"><?= e(t('会社情報', 'About')) ?></a>
                 <a class="nav-link" href="<?= e(url('/contact')) ?>"><?= e(t('お問い合わせ', 'Contact')) ?></a>

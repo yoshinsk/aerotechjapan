@@ -7,6 +7,7 @@
 declare(strict_types=1);
 
 $imageService = new ImageService();
+$fileService = new FileUploadService();
 
 if ($path === '/admin/ai-translate') {
     if (!is_post()) {
@@ -116,6 +117,10 @@ if ($path === '/admin/settings') {
 
 if ($path === '/admin/products') {
     $categoryFilter = trim((string)($_GET['category'] ?? 'all'));
+    $statusFilter = trim((string)($_GET['status'] ?? 'active'));
+    if (!in_array($statusFilter, ['active', 'deleted', 'all'], true)) {
+        $statusFilter = 'active';
+    }
     if ($categoryFilter !== 'all' && $categoryFilter !== 'uncategorized' && (!ctype_digit($categoryFilter) || (int)$categoryFilter < 1)) {
         $categoryFilter = 'all';
     }
@@ -127,10 +132,11 @@ if ($path === '/admin/products') {
         }
     }
     admin_render('products', [
-        'products' => $repo->adminProducts($_GET['q'] ?? null, $categoryFilter),
+        'products' => $repo->adminProducts($_GET['q'] ?? null, $categoryFilter, $statusFilter),
         'categories' => $categories,
-        'categoryCounts' => $repo->adminProductCategoryCounts(),
+        'categoryCounts' => $repo->adminProductCategoryCounts($statusFilter),
         'activeCategory' => $categoryFilter,
+        'statusFilter' => $statusFilter,
         'keyword' => trim((string)($_GET['q'] ?? '')),
         'title' => '商品管理',
     ]);
@@ -146,9 +152,99 @@ if ($path === '/admin/product-image-delete') {
     $productId = (int)($_POST['product_id'] ?? 0);
     $imageId = (int)($_POST['image_id'] ?? 0);
     if ($productId > 0 && $imageId > 0) {
-        $repo->deleteProductImage($imageId, $productId);
+        $image = $repo->productImage($imageId, $productId);
+        if ($repo->deleteProductImage($imageId, $productId) && $image && ($image['source_type'] ?? '') === 'upload') {
+            $imageService->deleteProductImageFiles($image);
+        }
     }
     redirect_to('/admin/product-edit?id=' . $productId . '&image_deleted=1');
+}
+
+if ($path === '/admin/product-images-update') {
+    if (!is_post()) {
+        redirect_to('/admin/products');
+    }
+
+    verify_csrf();
+    $productId = (int)($_POST['product_id'] ?? 0);
+    if ($productId < 1 || !$repo->productById($productId)) {
+        redirect_to('/admin/products');
+    }
+
+    $deleteIds = array_map('intval', (array)($_POST['delete_image_ids'] ?? []));
+    foreach ($deleteIds as $imageId) {
+        $image = $repo->productImage($imageId, $productId);
+        if ($image && $repo->deleteProductImage($imageId, $productId) && ($image['source_type'] ?? '') === 'upload') {
+            $imageService->deleteProductImageFiles($image);
+        }
+    }
+
+    $replaceFiles = $_FILES['replace_images'] ?? null;
+    if (is_array($replaceFiles)) {
+        foreach (($replaceFiles['name'] ?? []) as $imageId => $name) {
+            $imageId = (int)$imageId;
+            if ($imageId < 1 || in_array($imageId, $deleteIds, true)) {
+                continue;
+            }
+            $file = [
+                'name' => $name,
+                'type' => $replaceFiles['type'][$imageId] ?? '',
+                'tmp_name' => $replaceFiles['tmp_name'][$imageId] ?? '',
+                'error' => $replaceFiles['error'][$imageId] ?? UPLOAD_ERR_NO_FILE,
+                'size' => $replaceFiles['size'][$imageId] ?? 0,
+            ];
+            $stored = $imageService->storeUploadSet($file, 'products');
+            if ($stored) {
+                $oldImage = $repo->productImage($imageId, $productId);
+                $repo->updateProductImageFiles($imageId, $productId, $stored);
+                if ($oldImage && ($oldImage['source_type'] ?? '') === 'upload') {
+                    $imageService->deleteProductImageFiles($oldImage);
+                }
+            }
+        }
+    }
+
+    $orderedIds = array_values(array_diff(array_map('intval', (array)($_POST['image_order'] ?? [])), $deleteIds));
+    $repo->updateProductImages(
+        $productId,
+        $orderedIds,
+        (int)($_POST['main_image_id'] ?? 0),
+        (array)($_POST['image_alt'] ?? [])
+    );
+
+    redirect_to('/admin/product-edit?id=' . $productId . '&images_saved=1');
+}
+
+if ($path === '/admin/product-delete') {
+    if (!is_post()) {
+        redirect_to('/admin/products');
+    }
+
+    verify_csrf();
+    $productId = (int)($_POST['product_id'] ?? 0);
+    $action = (string)($_POST['delete_action'] ?? 'soft');
+    $product = $productId > 0 ? $repo->productById($productId) : null;
+    if (!$product) {
+        redirect_to('/admin/products');
+    }
+
+    if ($action === 'restore') {
+        $repo->restoreProduct($productId);
+        redirect_to('/admin/product-edit?id=' . $productId . '&restored=1');
+    }
+
+    if ($action === 'permanent') {
+        foreach ($repo->productImages($productId) as $image) {
+            if (($image['source_type'] ?? '') === 'upload') {
+                $imageService->deleteProductImageFiles($image);
+            }
+        }
+        $repo->permanentlyDeleteProduct($productId);
+        redirect_to('/admin/products?status=deleted&permanent_deleted=1');
+    }
+
+    $repo->softDeleteProduct($productId);
+    redirect_to('/admin/products?status=deleted&deleted=1');
 }
 
 if ($path === '/admin/product-edit') {
@@ -200,7 +296,7 @@ if ($path === '/admin/product-edit') {
                     'error' => $_FILES['images']['error'][$index] ?? UPLOAD_ERR_NO_FILE,
                     'size' => $_FILES['images']['size'][$index] ?? 0,
                 ];
-                $pathStored = $imageService->storeUpload($file, 'products');
+                $pathStored = $imageService->storeUploadSet($file, 'products');
                 if ($pathStored) {
                     $repo->addProductImage($productId, $pathStored, $payload['name_ja']);
                 }
@@ -228,6 +324,8 @@ if ($path === '/admin/product-edit') {
         'specsText' => implode("\n", $specLines),
         'saved' => isset($_GET['saved']),
         'imageDeleted' => isset($_GET['image_deleted']),
+        'imagesSaved' => isset($_GET['images_saved']),
+        'restored' => isset($_GET['restored']),
         'title' => $product ? '商品編集' : '商品追加',
     ]);
     return;
@@ -236,13 +334,26 @@ if ($path === '/admin/product-edit') {
 if ($path === '/admin/categories') {
     if (is_post()) {
         verify_csrf();
+        $categoryId = (int)($_POST['id'] ?? 0);
+        $currentCategory = $categoryId > 0 ? $repo->categoryById($categoryId) : null;
+        $logoPath = trim((string)($currentCategory['logo_path'] ?? ''));
+        if (!empty($_FILES['logo']['name'])) {
+            $uploadedLogo = $fileService->storeImageOriginal($_FILES['logo'], 'brands');
+            if ($uploadedLogo) {
+                if ($logoPath !== '') {
+                    $imageService->deletePublicUpload($logoPath);
+                }
+                $logoPath = $uploadedLogo;
+            }
+        }
         $repo->saveCategory([
-            'id' => (int)($_POST['id'] ?? 0) ?: null,
+            'id' => $categoryId ?: null,
             'slug' => slugify((string)($_POST['slug'] ?? $_POST['name_en'] ?? $_POST['name_ja'] ?? '')),
             'name_ja' => trim((string)($_POST['name_ja'] ?? '')),
             'name_en' => trim((string)($_POST['name_en'] ?? '')),
             'description_ja' => trim((string)($_POST['description_ja'] ?? '')),
             'description_en' => trim((string)($_POST['description_en'] ?? '')),
+            'logo_path' => $logoPath,
             'sort_order' => (int)($_POST['sort_order'] ?? 100),
             'is_active' => isset($_POST['is_active']) ? 1 : 0,
         ]);
@@ -254,6 +365,98 @@ if ($path === '/admin/categories') {
         'edit' => $edit,
         'saved' => isset($_GET['saved']),
         'title' => 'カテゴリ管理',
+    ]);
+    return;
+}
+
+if ($path === '/admin/price-lists') {
+    $edit = isset($_GET['id']) ? $repo->priceListById((int)$_GET['id']) : null;
+    if (is_post()) {
+        verify_csrf();
+        $id = (int)($_POST['id'] ?? 0);
+        $current = $id > 0 ? $repo->priceListById($id) : null;
+        $pdfPath = trim((string)($current['pdf_path'] ?? ''));
+        if (!empty($_FILES['pdf']['name'])) {
+            $uploadedPdf = $fileService->storePdf($_FILES['pdf'], 'price-lists');
+            if ($uploadedPdf) {
+                if ($pdfPath !== '') {
+                    $imageService->deletePublicUpload($pdfPath);
+                }
+                $pdfPath = $uploadedPdf;
+            }
+        }
+        if ($pdfPath === '') {
+            admin_render('price_lists', [
+                'priceLists' => $repo->priceLists(false),
+                'categories' => $repo->categories(false),
+                'edit' => $current,
+                'saved' => false,
+                'error' => 'PDFを選択してください。',
+                'title' => '価格表リスト',
+            ]);
+            return;
+        }
+
+        $priceListId = $repo->savePriceList([
+            'id' => $id ?: null,
+            'category_id' => (int)($_POST['category_id'] ?? 0) ?: null,
+            'title_ja' => trim((string)($_POST['title_ja'] ?? '')),
+            'title_en' => trim((string)($_POST['title_en'] ?? '')),
+            'pdf_path' => $pdfPath,
+            'sort_order' => (int)($_POST['sort_order'] ?? 100),
+            'is_active' => isset($_POST['is_active']) ? 1 : 0,
+            'published_at' => trim((string)($_POST['published_at'] ?? '')) ?: null,
+        ]);
+        redirect_to('/admin/price-lists?id=' . $priceListId . '&saved=1');
+    }
+
+    admin_render('price_lists', [
+        'priceLists' => $repo->priceLists(false),
+        'categories' => $repo->categories(false),
+        'edit' => $edit,
+        'saved' => isset($_GET['saved']),
+        'error' => null,
+        'title' => '価格表リスト',
+    ]);
+    return;
+}
+
+if ($path === '/admin/price-list-delete') {
+    if (!is_post()) {
+        redirect_to('/admin/price-lists');
+    }
+
+    verify_csrf();
+    $priceList = $repo->priceListById((int)($_POST['id'] ?? 0));
+    if ($priceList && $repo->deletePriceList((int)$priceList['id'])) {
+        $imageService->deletePublicUpload((string)$priceList['pdf_path']);
+    }
+    redirect_to('/admin/price-lists?deleted=1');
+}
+
+if ($path === '/admin/business-calendar') {
+    $requestedMonth = trim((string)($_GET['month'] ?? date('Y-m')));
+    if (!preg_match('/^\d{4}-\d{2}$/', $requestedMonth)) {
+        $requestedMonth = date('Y-m');
+    }
+    [$year, $month] = array_map('intval', explode('-', $requestedMonth));
+    $calendar = new BusinessCalendar($repo);
+
+    if (is_post()) {
+        verify_csrf();
+        $repo->saveBusinessDayExceptions(
+            (array)($_POST['status'] ?? []),
+            (array)($_POST['note_ja'] ?? []),
+            (array)($_POST['note_en'] ?? [])
+        );
+        redirect_to('/admin/business-calendar?month=' . sprintf('%04d-%02d', $year, $month) . '&saved=1');
+    }
+
+    admin_render('business_calendar', [
+        'calendarMonth' => $calendar->month($year, $month),
+        'statusLabels' => BusinessCalendar::statusLabels(),
+        'saved' => isset($_GET['saved']),
+        'title' => '営業日カレンダー',
     ]);
     return;
 }

@@ -29,7 +29,12 @@
 - 日本語/英語フィールドをDBに持ち、`Accept-Language` と `?lang=ja|en` で切替。
 - 商品ページから商品ID付きで問い合わせフォームへ遷移。
 - 問い合わせフォームはCSRFトークン、ハニーポット、最短送信時間チェックを実装。
-- 管理画面では画像アップロード時にGDで `large/card/thumb` 用画像を自動生成。
+- 管理画面では画像アップロード時にオリジナルを保存し、GDで `large/thumb` 用画像をトリミングなしで自動生成。
+- 商品画像はCMSで差し替え、削除、ドラッグアンドドロップ並び替え、メイン画像指定ができる。
+- 商品削除は通常は論理削除、必要時は完全削除。完全削除ではアップロード画像ファイルも削除する。
+- カテゴリはブランド管理を兼ね、ブランドロゴをアップロードできる。
+- ブランド別価格表PDFをCMSでアップロードし、公開側 `/price-lists` で「価格表リスト」として表示する。
+- 営業日カレンダーは日曜日・日本の祝日を通常定休日とし、CMSで休日・午前休・午後休・営業日の例外を編集できる。
 - 公開サイトはBootstrap 5を読み込み、既存サイト由来の黒基調・赤アクセント・シアンリンクを維持してレスポンシブ表示。
 - 管理画面はBootstrap 5を読み込み、黒基調・赤アクセント・シアンリンクの既存サイトイメージに合わせて表示。
 - 商品管理一覧はカテゴリタブ、検索、サムネイル、公開/下書きバッジで絞り込み編集できる。
@@ -44,6 +49,12 @@
 mysql -u aerotech_user -p aerotech_cms < httpdocs/database/schema.sql
 cd httpdocs
 AEROTECH_ADMIN_EMAIL='admin@aero-tech.co.jp' AEROTECH_ADMIN_PASSWORD='任意の強いパスワード' php database/seed.php
+```
+
+既存DBへ今回の画像派生・価格表・営業日カレンダー機能だけを追加する場合は、以下を適用する。
+
+```bash
+mysql -u aerotech_user -p aerotech_cms < httpdocs/database/migrations/20260708_assets_calendar.sql
 ```
 
 Pleskのドキュメントルートは `/var/www/vhosts/aero-tech.co.jp/httpdocs/public` に設定する。

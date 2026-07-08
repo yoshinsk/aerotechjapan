@@ -288,3 +288,87 @@ document.querySelectorAll('[data-translation-helper]').forEach((helper) => {
   helper.querySelector('[data-translation-apply]')?.addEventListener('click', applyDrafts);
   buildDrafts();
 });
+
+document.querySelectorAll('[data-sortable-images]').forEach((list) => {
+  let dragged = null;
+
+  list.addEventListener('dragstart', (event) => {
+    const item = event.target.closest('[data-image-sort-item]');
+    if (!item) {
+      return;
+    }
+    dragged = item;
+    item.classList.add('is-dragging');
+    event.dataTransfer.effectAllowed = 'move';
+  });
+
+  list.addEventListener('dragend', () => {
+    dragged?.classList.remove('is-dragging');
+    dragged = null;
+  });
+
+  list.addEventListener('dragover', (event) => {
+    if (!dragged) {
+      return;
+    }
+    event.preventDefault();
+    const target = event.target.closest('[data-image-sort-item]');
+    if (!target || target === dragged) {
+      return;
+    }
+    const rect = target.getBoundingClientRect();
+    const before = event.clientY < rect.top + rect.height / 2;
+    list.insertBefore(dragged, before ? target : target.nextSibling);
+  });
+});
+
+document.querySelectorAll('[data-calendar-editor]').forEach((editor) => {
+  const selected = new Set();
+  const labels = {
+    '': '基本設定',
+    open: '営業日',
+    closed: '休日',
+    am_closed: '午前休',
+    pm_closed: '午後休',
+  };
+
+  editor.querySelectorAll('[data-calendar-date]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const date = button.getAttribute('data-calendar-date');
+      if (!date) {
+        return;
+      }
+      if (selected.has(date)) {
+        selected.delete(date);
+        button.classList.remove('is-selected');
+        return;
+      }
+      selected.add(date);
+      button.classList.add('is-selected');
+    });
+  });
+
+  editor.querySelectorAll('[data-calendar-apply-status]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const status = button.getAttribute('data-calendar-apply-status') || '';
+      selected.forEach((date) => {
+        const input = editor.querySelector(`[data-calendar-input="${date}"]`);
+        const day = editor.querySelector(`[data-calendar-date="${date}"]`);
+        if (!input || !day) {
+          return;
+        }
+        input.value = status;
+        day.dataset.calendarStatus = status;
+        day.classList.remove('status-open', 'status-closed', 'status-am_closed', 'status-pm_closed');
+        const visualStatus = status || day.getAttribute('data-calendar-base-status') || 'open';
+        if (visualStatus) {
+          day.classList.add(`status-${visualStatus}`);
+        }
+        const label = day.querySelector('[data-calendar-status-label]');
+        if (label) {
+          label.textContent = status === '' ? labels[visualStatus] || visualStatus : labels[status] || status;
+        }
+      });
+    });
+  });
+});
