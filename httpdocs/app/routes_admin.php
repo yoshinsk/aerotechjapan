@@ -153,7 +153,7 @@ if ($path === '/admin/product-image-delete') {
     $imageId = (int)($_POST['image_id'] ?? 0);
     if ($productId > 0 && $imageId > 0) {
         $image = $repo->productImage($imageId, $productId);
-        if ($repo->deleteProductImage($imageId, $productId) && $image && ($image['source_type'] ?? '') === 'upload') {
+        if ($repo->deleteProductImage($imageId, $productId) && $image) {
             $imageService->deleteProductImageFiles($image);
         }
     }
@@ -174,7 +174,7 @@ if ($path === '/admin/product-images-update') {
     $deleteIds = array_map('intval', (array)($_POST['delete_image_ids'] ?? []));
     foreach ($deleteIds as $imageId) {
         $image = $repo->productImage($imageId, $productId);
-        if ($image && $repo->deleteProductImage($imageId, $productId) && ($image['source_type'] ?? '') === 'upload') {
+        if ($image && $repo->deleteProductImage($imageId, $productId)) {
             $imageService->deleteProductImageFiles($image);
         }
     }
@@ -235,9 +235,7 @@ if ($path === '/admin/product-delete') {
 
     if ($action === 'permanent') {
         foreach ($repo->productImages($productId) as $image) {
-            if (($image['source_type'] ?? '') === 'upload') {
-                $imageService->deleteProductImageFiles($image);
-            }
+            $imageService->deleteProductImageFiles($image);
         }
         $repo->permanentlyDeleteProduct($productId);
         redirect_to('/admin/products?status=deleted&permanent_deleted=1');

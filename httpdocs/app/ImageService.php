@@ -13,6 +13,8 @@ final class ImageService
         'thumb' => [480, 360],
     ];
 
+    private array $legacyImagePrefixes = ['garage-img/', 'img/', 'order/', 'parts/', 'dash-boad-table/', 'side-table/', 'event/'];
+
     public function storeUpload(array $file, string $directory = 'products'): ?string
     {
         $stored = $this->storeUploadSet($file, $directory);
@@ -124,7 +126,7 @@ final class ImageService
             $image['thumb_path'] ?? '',
         ]));
         foreach ($paths as $path) {
-            $this->deletePublicUpload((string)$path);
+            $this->deleteManagedProductImage((string)$path);
         }
     }
 
@@ -141,5 +143,42 @@ final class ImageService
             return;
         }
         @unlink($realFile);
+    }
+
+    private function deleteManagedProductImage(string $path): void
+    {
+        $path = trim(ltrim(str_replace('\\', '/', $path), '/'));
+        if ($path === '' || str_contains($path, '..')) {
+            return;
+        }
+        if (str_starts_with($path, 'uploads/')) {
+            $this->deletePublicUpload($path);
+            return;
+        }
+        if (!$this->isLegacyProductImagePath($path)) {
+            return;
+        }
+
+        $root = rtrim((string)config_value('app.legacy_root'), '/\\');
+        $absolute = $root . '/' . $path;
+        $realRoot = realpath($root);
+        $realFile = is_file($absolute) ? realpath($absolute) : false;
+        if (!$realRoot || !$realFile || !str_starts_with($realFile, $realRoot . DIRECTORY_SEPARATOR)) {
+            return;
+        }
+        @unlink($realFile);
+    }
+
+    private function isLegacyProductImagePath(string $path): bool
+    {
+        if (!is_image_path($path)) {
+            return false;
+        }
+        foreach ($this->legacyImagePrefixes as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
