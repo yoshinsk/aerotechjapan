@@ -179,8 +179,11 @@ final class FileUploadService
             throw new RuntimeException('変換済みPNGを読み込めませんでした。');
         }
 
-        $sourceWidth = imagesx($source);
-        $sourceHeight = imagesy($source);
+        $bounds = $this->detectVisiblePngBounds($source);
+        $sourceX = $bounds['x'];
+        $sourceY = $bounds['y'];
+        $sourceWidth = $bounds['width'];
+        $sourceHeight = $bounds['height'];
         $ratio = min($maxWidth / $sourceWidth, $maxHeight / $sourceHeight, 1);
         $width = max(1, (int)round($sourceWidth * $ratio));
         $height = max(1, (int)round($sourceHeight * $ratio));
@@ -188,7 +191,7 @@ final class FileUploadService
         imagealphablending($canvas, false);
         imagesavealpha($canvas, true);
         imagefilledrectangle($canvas, 0, 0, $width, $height, imagecolorallocatealpha($canvas, 0, 0, 0, 127));
-        imagecopyresampled($canvas, $source, 0, 0, 0, 0, $width, $height, $sourceWidth, $sourceHeight);
+        imagecopyresampled($canvas, $source, 0, 0, $sourceX, $sourceY, $width, $height, $sourceWidth, $sourceHeight);
         if (!imagepng($canvas, $targetPath, 6)) {
             imagedestroy($canvas);
             imagedestroy($source);
@@ -197,6 +200,111 @@ final class FileUploadService
         chmod($targetPath, 0664);
         imagedestroy($canvas);
         imagedestroy($source);
+    }
+
+    private function detectVisiblePngBounds($image): array
+    {
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $background = $this->samplePngBackground($image, $width, $height);
+        $minX = $width;
+        $minY = $height;
+        $maxX = -1;
+        $maxY = -1;
+
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                if (!$this->isLogoPixel($this->pngPixelAt($image, $x, $y), $background)) {
+                    continue;
+                }
+                $minX = min($minX, $x);
+                $minY = min($minY, $y);
+                $maxX = max($maxX, $x);
+                $maxY = max($maxY, $y);
+            }
+        }
+
+        if ($maxX < 0 || $maxY < 0) {
+            return ['x' => 0, 'y' => 0, 'width' => $width, 'height' => $height];
+        }
+
+        $cropWidth = $maxX - $minX + 1;
+        $cropHeight = $maxY - $minY + 1;
+        $padding = min(24, max(4, (int)round(min($cropWidth, $cropHeight) * 0.03)));
+        $minX = max(0, $minX - $padding);
+        $minY = max(0, $minY - $padding);
+        $maxX = min($width - 1, $maxX + $padding);
+        $maxY = min($height - 1, $maxY + $padding);
+
+        return [
+            'x' => $minX,
+            'y' => $minY,
+            'width' => $maxX - $minX + 1,
+            'height' => $maxY - $minY + 1,
+        ];
+    }
+
+    private function samplePngBackground($image, int $width, int $height): array
+    {
+        $points = [
+            [0, 0],
+            [$width - 1, 0],
+            [0, $height - 1],
+            [$width - 1, $height - 1],
+            [intdiv($width, 2), 0],
+            [intdiv($width, 2), $height - 1],
+            [0, intdiv($height, 2)],
+            [$width - 1, intdiv($height, 2)],
+        ];
+        $samples = [];
+        $transparentCount = 0;
+        foreach ($points as [$x, $y]) {
+            $pixel = $this->pngPixelAt($image, $x, $y);
+            $samples[] = $pixel;
+            if ($pixel['alpha'] >= 120) {
+                $transparentCount++;
+            }
+        }
+        if ($transparentCount >= 4) {
+            return ['red' => 0, 'green' => 0, 'blue' => 0, 'alpha' => 127, 'transparent' => true];
+        }
+
+        $opaqueSamples = array_values(array_filter($samples, static fn(array $sample): bool => $sample['alpha'] < 120));
+        $count = max(1, count($opaqueSamples));
+        return [
+            'red' => (int)round(array_sum(array_column($opaqueSamples, 'red')) / $count),
+            'green' => (int)round(array_sum(array_column($opaqueSamples, 'green')) / $count),
+            'blue' => (int)round(array_sum(array_column($opaqueSamples, 'blue')) / $count),
+            'alpha' => (int)round(array_sum(array_column($opaqueSamples, 'alpha')) / $count),
+            'transparent' => false,
+        ];
+    }
+
+    private function pngPixelAt($image, int $x, int $y): array
+    {
+        $color = imagecolorat($image, $x, $y);
+        return [
+            'red' => ($color >> 16) & 0xFF,
+            'green' => ($color >> 8) & 0xFF,
+            'blue' => $color & 0xFF,
+            'alpha' => ($color >> 24) & 0x7F,
+        ];
+    }
+
+    private function isLogoPixel(array $pixel, array $background): bool
+    {
+        if ($pixel['alpha'] >= 124) {
+            return false;
+        }
+        if ($background['transparent']) {
+            return true;
+        }
+
+        return max(
+            abs($pixel['red'] - $background['red']),
+            abs($pixel['green'] - $background['green']),
+            abs($pixel['blue'] - $background['blue'])
+        ) > 18 || abs($pixel['alpha'] - $background['alpha']) > 8;
     }
 
     private function ghostscriptBinary(): string
