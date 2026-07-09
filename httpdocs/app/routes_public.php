@@ -6,6 +6,26 @@
 
 declare(strict_types=1);
 
+if (!function_exists('public_calendar_start_month')) {
+    function public_calendar_start_month(): DateTimeImmutable
+    {
+        $requestedMonth = trim((string)($_GET['calendar_month'] ?? date('Y-m')));
+        if (!preg_match('/^\d{4}-\d{2}$/', $requestedMonth)) {
+            $requestedMonth = date('Y-m');
+        }
+        [$year, $month] = array_map('intval', explode('-', $requestedMonth));
+        if (!checkdate($month, 1, $year)) {
+            $requestedMonth = date('Y-m');
+        }
+
+        try {
+            return (new DateTimeImmutable($requestedMonth . '-01'))->modify('first day of this month');
+        } catch (Throwable) {
+            return new DateTimeImmutable('first day of this month');
+        }
+    }
+}
+
 if ($path === '/favicon.ico') {
     header('Content-Type: image/svg+xml; charset=UTF-8');
     echo '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="8" fill="#e12d2d"/><path fill="#fff" d="M13 44 28 16h8l15 28h-8l-3-7H24l-3 7h-8Zm14-14h10l-5-11-5 11Z"/></svg>';
@@ -13,6 +33,8 @@ if ($path === '/favicon.ico') {
 }
 
 if ($path === '/') {
+    $calendar = new BusinessCalendar($repo);
+    $calendarStart = public_calendar_start_month();
     render('home', [
         'repo' => $repo,
         'home' => $repo->page('home'),
@@ -20,7 +42,7 @@ if ($path === '/') {
         'featuredProducts' => $repo->products(['featured' => true], 8),
         'latestProducts' => $repo->products([], 8),
         'newsPosts' => $repo->news(5),
-        'businessCalendarMonth' => (new BusinessCalendar($repo))->months(1)[0] ?? null,
+        'businessCalendarMonth' => $calendar->months(1, $calendarStart)[0] ?? null,
         'businessStatusLabels' => BusinessCalendar::statusLabels(),
         'title' => config_value('app.name'),
     ]);
@@ -200,7 +222,8 @@ if (preg_match('#^/page/([^/]+)$#', $path, $matches)) {
     }
     $params = ['page' => $page, 'title' => localized($page, 'title')];
     if ($matches[1] === 'about') {
-        $params['businessCalendarMonths'] = (new BusinessCalendar($repo))->months(2);
+        $calendar = new BusinessCalendar($repo);
+        $params['businessCalendarMonths'] = $calendar->months(2, public_calendar_start_month());
         $params['businessStatusLabels'] = BusinessCalendar::statusLabels();
     }
     render('page', $params);

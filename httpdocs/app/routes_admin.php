@@ -504,7 +504,10 @@ if ($path === '/admin/business-calendar') {
         $repo->saveBusinessDayExceptions(
             (array)($_POST['status'] ?? []),
             (array)($_POST['note_ja'] ?? []),
-            (array)($_POST['note_en'] ?? [])
+            (array)($_POST['note_en'] ?? []),
+            (array)($_POST['event_name_ja'] ?? []),
+            (array)($_POST['event_name_en'] ?? []),
+            (array)($_POST['event_url'] ?? [])
         );
         redirect_to('/admin/business-calendar?month=' . sprintf('%04d-%02d', $year, $month) . '&saved=1');
     }

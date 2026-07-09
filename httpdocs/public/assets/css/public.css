@@ -205,12 +205,43 @@ body.site-body {
   font-size: clamp(22px, 4vw, 34px);
 }
 
-.hero-calendar-head > span {
+.hero-calendar-side {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.hero-calendar-side > span {
   color: var(--aero-muted);
   font-size: 12px;
   font-weight: 800;
   line-height: 1.35;
   text-align: right;
+}
+
+.hero-calendar-nav {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.hero-calendar-nav a {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--aero-text);
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 999px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.hero-calendar-nav a:hover,
+.hero-calendar-nav a:focus {
+  color: #061317;
+  background: var(--aero-cyan);
+  border-color: var(--aero-cyan);
 }
 
 .hero-calendar-grid {
@@ -270,6 +301,17 @@ body.site-body {
   outline-offset: 1px;
 }
 
+.hero-calendar-day.has-event {
+  border-color: rgba(77, 216, 255, .58);
+}
+
+.hero-calendar-event-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--aero-cyan);
+  border-radius: 999px;
+}
+
 .hero-calendar-legend {
   display: flex;
   flex-wrap: wrap;
@@ -302,6 +344,53 @@ body.site-body {
 
 .legend-half {
   background: var(--aero-cyan);
+}
+
+.hero-calendar-events {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, .14);
+}
+
+.hero-calendar-events p {
+  margin: 0 0 6px;
+  color: var(--aero-cyan);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.hero-calendar-events ul,
+.calendar-events ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero-calendar-events li,
+.calendar-events li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+}
+
+.hero-calendar-events time,
+.calendar-events time {
+  color: var(--aero-cyan);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.hero-calendar-events a,
+.calendar-events a {
+  color: var(--aero-text);
+  text-decoration: underline;
+  text-decoration-color: rgba(77, 216, 255, .55);
+  text-underline-offset: 3px;
 }
 
 .actions {
@@ -589,6 +678,18 @@ button.button {
   gap: 12px;
 }
 
+.calendar-month-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.calendar-month-nav span {
+  color: var(--aero-text);
+  font-weight: 800;
+}
+
 .business-calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -647,6 +748,36 @@ button.button {
 .calendar-day.is-today {
   outline: 2px solid var(--aero-cyan);
   outline-offset: 1px;
+}
+
+.calendar-day.has-event {
+  border-color: rgba(77, 216, 255, .62);
+}
+
+.calendar-day-event {
+  width: fit-content;
+  margin-top: 3px;
+  padding: 1px 5px;
+  color: #061317;
+  background: var(--aero-cyan);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.calendar-events {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  background: var(--aero-surface);
+  border: 1px solid var(--aero-line);
+  border-radius: 8px;
+}
+
+.calendar-events h4 {
+  margin: 0;
+  font-size: 15px;
 }
 
 .field label {
@@ -778,7 +909,7 @@ button.button {
     font-size: 22px;
   }
 
-  .hero-calendar-head > span {
+  .hero-calendar-side > span {
     max-width: 120px;
     font-size: 11px;
   }

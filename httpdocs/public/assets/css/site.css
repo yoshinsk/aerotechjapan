@@ -1083,22 +1083,28 @@ button.calendar-day {
   visibility: hidden;
 }
 
-.calendar-day.is-selected {
-  outline: 3px solid var(--cyan);
-  outline-offset: 1px;
-}
-
 .calendar-day-number {
   display: block;
   font-weight: 900;
 }
 
 .calendar-day-status,
-.calendar-day-note {
+.calendar-day-note,
+.calendar-day-event {
   display: block;
   color: #b8c0c8;
   font-size: 11px;
   line-height: 1.25;
+}
+
+.calendar-day-event {
+  width: fit-content;
+  margin-top: 3px;
+  padding: 1px 5px;
+  color: #061317;
+  background: var(--cyan);
+  border-radius: 999px;
+  font-weight: 800;
 }
 
 .calendar-day.status-closed {
@@ -1110,6 +1116,50 @@ button.calendar-day {
 .calendar-day.status-pm_closed {
   background: rgba(77, 216, 255, .13);
   border-color: rgba(77, 216, 255, .48);
+}
+
+button.calendar-day.is-selected,
+button.calendar-day.is-active {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(77, 216, 255, .75), inset 0 0 0 999px rgba(77, 216, 255, .08);
+  outline: 0;
+}
+
+button.calendar-day.is-active {
+  box-shadow: 0 0 0 3px rgba(77, 216, 255, .95), inset 0 0 0 999px rgba(77, 216, 255, .12);
+}
+
+.calendar-event-editor {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: #111;
+  border: 1px solid #303030;
+  border-radius: 8px;
+}
+
+.calendar-event-editor h3,
+.calendar-event-panel h4 {
+  margin: 0;
+}
+
+.calendar-event-empty {
+  color: #b8c0c8;
+}
+
+.calendar-event-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.calendar-event-url-field {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 900px) {
+  .calendar-event-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .hp-field {

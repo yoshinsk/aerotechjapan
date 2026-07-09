@@ -502,7 +502,14 @@ final class CmsRepository
         return $rows;
     }
 
-    public function saveBusinessDayExceptions(array $statuses, array $notesJa = [], array $notesEn = []): void
+    public function saveBusinessDayExceptions(
+        array $statuses,
+        array $notesJa = [],
+        array $notesEn = [],
+        array $eventNamesJa = [],
+        array $eventNamesEn = [],
+        array $eventUrls = []
+    ): void
     {
         $allowed = [
             BusinessCalendar::STATUS_OPEN,
@@ -511,9 +518,9 @@ final class CmsRepository
             BusinessCalendar::STATUS_PM_CLOSED,
         ];
         $upsert = $this->pdo->prepare(
-            'INSERT INTO business_day_exceptions (business_date, status, note_ja, note_en)
-             VALUES (?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE status = VALUES(status), note_ja = VALUES(note_ja), note_en = VALUES(note_en)'
+            'INSERT INTO business_day_exceptions (business_date, status, note_ja, note_en, event_name_ja, event_name_en, event_url)
+             VALUES (?, ?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE status = VALUES(status), note_ja = VALUES(note_ja), note_en = VALUES(note_en), event_name_ja = VALUES(event_name_ja), event_name_en = VALUES(event_name_en), event_url = VALUES(event_url)'
         );
         $delete = $this->pdo->prepare('DELETE FROM business_day_exceptions WHERE business_date = ?');
         foreach ($statuses as $date => $status) {
@@ -521,20 +528,47 @@ final class CmsRepository
                 continue;
             }
             $status = trim((string)$status);
-            if ($status === BusinessCalendar::STATUS_DEFAULT) {
+            $noteJa = trim((string)($notesJa[$date] ?? ''));
+            $noteEn = trim((string)($notesEn[$date] ?? ''));
+            $eventNameJa = trim((string)($eventNamesJa[$date] ?? ''));
+            $eventNameEn = trim((string)($eventNamesEn[$date] ?? ''));
+            $eventUrl = $this->normalizeEventUrl((string)($eventUrls[$date] ?? ''));
+            if (
+                $status === BusinessCalendar::STATUS_DEFAULT
+                && $noteJa === ''
+                && $noteEn === ''
+                && $eventNameJa === ''
+                && $eventNameEn === ''
+                && $eventUrl === ''
+            ) {
                 $delete->execute([$date]);
                 continue;
             }
-            if (!in_array($status, $allowed, true)) {
+            if ($status !== BusinessCalendar::STATUS_DEFAULT && !in_array($status, $allowed, true)) {
                 continue;
             }
             $upsert->execute([
                 $date,
                 $status,
-                trim((string)($notesJa[$date] ?? '')),
-                trim((string)($notesEn[$date] ?? '')),
+                $noteJa,
+                $noteEn,
+                $eventNameJa,
+                $eventNameEn,
+                $eventUrl,
             ]);
         }
+    }
+
+    private function normalizeEventUrl(string $url): string
+    {
+        $url = trim($url);
+        if ($url === '') {
+            return '';
+        }
+        if (!preg_match('#^https?://#i', $url)) {
+            $url = 'https://' . $url;
+        }
+        return filter_var($url, FILTER_VALIDATE_URL) ? $url : '';
     }
 
     public function saveInquiry(array $data): int

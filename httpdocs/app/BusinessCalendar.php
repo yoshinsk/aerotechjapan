@@ -42,6 +42,9 @@ final class BusinessCalendar
             $baseStatus = $this->defaultStatus($day, $holidays);
             $overrideStatus = $exceptions[$date]['status'] ?? self::STATUS_DEFAULT;
             $status = $overrideStatus !== self::STATUS_DEFAULT ? $overrideStatus : $baseStatus;
+            $eventNameJa = trim((string)($exceptions[$date]['event_name_ja'] ?? ''));
+            $eventNameEn = trim((string)($exceptions[$date]['event_name_en'] ?? ''));
+            $eventUrl = trim((string)($exceptions[$date]['event_url'] ?? ''));
             $days[] = [
                 'date' => $date,
                 'day' => (int)$day->format('j'),
@@ -52,9 +55,18 @@ final class BusinessCalendar
                 'holiday_name' => $holidays[$date] ?? '',
                 'note_ja' => $exceptions[$date]['note_ja'] ?? '',
                 'note_en' => $exceptions[$date]['note_en'] ?? '',
+                'event_name_ja' => $eventNameJa,
+                'event_name_en' => $eventNameEn,
+                'event_url' => $eventUrl,
+                'has_event' => $eventNameJa !== '' || $eventNameEn !== '',
                 'is_today' => $date === date('Y-m-d'),
             ];
         }
+
+        $events = array_values(array_filter(
+            $days,
+            static fn(array $day): bool => (bool)$day['has_event']
+        ));
 
         return [
             'year' => (int)$first->format('Y'),
@@ -62,12 +74,13 @@ final class BusinessCalendar
             'label' => $first->format('Y年n月'),
             'first_weekday' => (int)$first->format('w'),
             'days' => $days,
+            'events' => $events,
         ];
     }
 
-    public function months(int $count = 2): array
+    public function months(int $count = 2, ?DateTimeImmutable $start = null): array
     {
-        $start = (new DateTimeImmutable('first day of this month'))->setTime(0, 0);
+        $start = ($start ?? new DateTimeImmutable('first day of this month'))->modify('first day of this month')->setTime(0, 0);
         $months = [];
         for ($i = 0; $i < $count; $i++) {
             $target = $start->modify("+{$i} month");

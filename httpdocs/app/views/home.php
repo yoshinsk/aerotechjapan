@@ -11,6 +11,13 @@ $heroCalendarStatusShort = [
     BusinessCalendar::STATUS_AM_CLOSED => t('午前休', 'AM'),
     BusinessCalendar::STATUS_PM_CLOSED => t('午後休', 'PM'),
 ];
+$heroCalendarPrev = '';
+$heroCalendarNext = '';
+if (!empty($businessCalendarMonth)) {
+    $heroCalendarDate = new DateTimeImmutable(sprintf('%04d-%02d-01', $businessCalendarMonth['year'], $businessCalendarMonth['month']));
+    $heroCalendarPrev = $heroCalendarDate->modify('-1 month')->format('Y-m');
+    $heroCalendarNext = $heroCalendarDate->modify('+1 month')->format('Y-m');
+}
 ?>
 <section class="hero">
     <img class="hero-bg" src="<?= e(media_url($heroImage)) ?>" alt="">
@@ -25,13 +32,19 @@ $heroCalendarStatusShort = [
             </div>
         </div>
         <?php if (!empty($businessCalendarMonth)): ?>
-            <aside class="hero-calendar" aria-label="<?= e(t('今月の営業日カレンダー', 'This month business calendar')) ?>">
+            <aside class="hero-calendar" id="home-business-calendar" aria-label="<?= e(t('今月の営業日カレンダー', 'This month business calendar')) ?>">
                 <div class="hero-calendar-head">
                     <div>
                         <p class="eyebrow">Business Calendar</p>
                         <h2><?= e($businessCalendarMonth['label']) ?></h2>
                     </div>
-                    <span><?= e(t('日曜・祝日定休', 'Closed Sundays / holidays')) ?></span>
+                    <div class="hero-calendar-side">
+                        <span><?= e(t('日曜・祝日定休', 'Closed Sundays / holidays')) ?></span>
+                        <div class="hero-calendar-nav" aria-label="<?= e(t('表示月を変更', 'Change month')) ?>">
+                            <a href="<?= e(url('/?calendar_month=' . rawurlencode($heroCalendarPrev) . '#home-business-calendar')) ?>" aria-label="<?= e(t('前月', 'Previous month')) ?>">‹</a>
+                            <a href="<?= e(url('/?calendar_month=' . rawurlencode($heroCalendarNext) . '#home-business-calendar')) ?>" aria-label="<?= e(t('翌月', 'Next month')) ?>">›</a>
+                        </div>
+                    </div>
                 </div>
                 <div class="hero-calendar-grid">
                     <?php foreach (['日', '月', '火', '水', '木', '金', '土'] as $weekday): ?>
@@ -42,8 +55,9 @@ $heroCalendarStatusShort = [
                     <?php endfor; ?>
                     <?php foreach ($businessCalendarMonth['days'] as $day): ?>
                         <?php $shortStatus = $heroCalendarStatusShort[$day['status']] ?? ''; ?>
-                        <div class="hero-calendar-day status-<?= e($day['status']) ?> <?= $day['is_today'] ? 'is-today' : '' ?>">
+                        <div class="hero-calendar-day status-<?= e($day['status']) ?> <?= $day['is_today'] ? 'is-today' : '' ?> <?= $day['has_event'] ? 'has-event' : '' ?>">
                             <span class="hero-calendar-number"><?= e($day['day']) ?></span>
+                            <?php if ($day['has_event']): ?><span class="hero-calendar-event-dot" aria-label="<?= e(t('イベントあり', 'Event')) ?>"></span><?php endif; ?>
                             <?php if ($shortStatus !== ''): ?><span class="hero-calendar-status"><?= e($shortStatus) ?></span><?php endif; ?>
                         </div>
                     <?php endforeach; ?>
@@ -53,6 +67,25 @@ $heroCalendarStatusShort = [
                     <span><i class="legend-closed"></i><?= e(t('休日', 'Closed')) ?></span>
                     <span><i class="legend-half"></i><?= e(t('午前休・午後休', 'Half day')) ?></span>
                 </div>
+                <?php if (!empty($businessCalendarMonth['events'])): ?>
+                    <div class="hero-calendar-events">
+                        <p><?= e(t('イベント', 'Events')) ?></p>
+                        <ul>
+                            <?php foreach ($businessCalendarMonth['events'] as $event): ?>
+                                <?php $eventName = localized($event, 'event_name'); ?>
+                                <?php if ($eventName === ''): ?><?php continue; ?><?php endif; ?>
+                                <li>
+                                    <time datetime="<?= e($event['date']) ?>"><?= e(date('n/j', strtotime($event['date']))) ?></time>
+                                    <?php if ($event['event_url'] !== ''): ?>
+                                        <a href="<?= e($event['event_url']) ?>" target="_blank" rel="noopener noreferrer"><?= e($eventName) ?></a>
+                                    <?php else: ?>
+                                        <span><?= e($eventName) ?></span>
+                                    <?php endif; ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
             </aside>
         <?php endif; ?>
     </div>

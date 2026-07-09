@@ -558,6 +558,10 @@ document.querySelectorAll('[data-sortable-images]').forEach((list) => {
 
 document.querySelectorAll('[data-calendar-editor]').forEach((editor) => {
   const selected = new Set();
+  const dayButtons = new Map();
+  const eventPanels = new Map();
+  const eventNameInputs = new Map();
+  const emptyEventState = editor.querySelector('[data-calendar-event-empty]');
   const labels = {
     '': '基本設定',
     open: '営業日',
@@ -566,19 +570,71 @@ document.querySelectorAll('[data-calendar-editor]').forEach((editor) => {
     pm_closed: '午後休',
   };
 
+  const setActiveDate = (date) => {
+    dayButtons.forEach((button, buttonDate) => {
+      button.classList.toggle('is-active', buttonDate === date);
+    });
+    eventPanels.forEach((panel, panelDate) => {
+      panel.hidden = panelDate !== date;
+    });
+    if (emptyEventState) {
+      emptyEventState.hidden = eventPanels.has(date);
+    }
+  };
+
+  const updateEventBadge = (date) => {
+    const day = dayButtons.get(date);
+    const inputs = eventNameInputs.get(date) || [];
+    if (!day) {
+      return;
+    }
+    const hasEvent = inputs.some((input) => input.value.trim() !== '');
+    day.classList.toggle('has-event', hasEvent);
+    const badge = day.querySelector('[data-calendar-event-badge]');
+    if (badge) {
+      badge.hidden = !hasEvent;
+    }
+  };
+
+  editor.querySelectorAll('[data-calendar-event-panel]').forEach((panel) => {
+    const date = panel.getAttribute('data-calendar-event-panel');
+    if (date) {
+      eventPanels.set(date, panel);
+    }
+  });
+
+  editor.querySelectorAll('[data-calendar-event-name]').forEach((input) => {
+    const date = input.getAttribute('data-calendar-event-name');
+    if (!date) {
+      return;
+    }
+    if (!eventNameInputs.has(date)) {
+      eventNameInputs.set(date, []);
+    }
+    eventNameInputs.get(date).push(input);
+    input.addEventListener('input', () => updateEventBadge(date));
+  });
+
   editor.querySelectorAll('[data-calendar-date]').forEach((button) => {
+    const date = button.getAttribute('data-calendar-date');
+    if (date) {
+      dayButtons.set(date, button);
+    }
     button.addEventListener('click', () => {
-      const date = button.getAttribute('data-calendar-date');
       if (!date) {
-        return;
-      }
-      if (selected.has(date)) {
-        selected.delete(date);
-        button.classList.remove('is-selected');
         return;
       }
       selected.add(date);
       button.classList.add('is-selected');
+      setActiveDate(date);
+    });
+  });
+
+  editor.querySelectorAll('[data-calendar-clear-selection]').forEach((button) => {
+    button.addEventListener('click', () => {
+      selected.clear();
+      dayButtons.forEach((day) => day.classList.remove('is-selected', 'is-active'));
+      setActiveDate('');
     });
   });
 

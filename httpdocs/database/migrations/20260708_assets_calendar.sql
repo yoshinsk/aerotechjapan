@@ -40,6 +40,9 @@ CREATE TABLE IF NOT EXISTS business_day_exceptions (
     status VARCHAR(20) NOT NULL DEFAULT 'closed',
     note_ja VARCHAR(255) NOT NULL DEFAULT '',
     note_en VARCHAR(255) NOT NULL DEFAULT '',
+    event_name_ja VARCHAR(255) NOT NULL DEFAULT '',
+    event_name_en VARCHAR(255) NOT NULL DEFAULT '',
+    event_url VARCHAR(500) NOT NULL DEFAULT '',
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (business_date),
     KEY idx_business_day_status (status)
