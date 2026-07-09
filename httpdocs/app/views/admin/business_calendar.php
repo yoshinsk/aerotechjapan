@@ -21,7 +21,7 @@ $next = (new DateTimeImmutable($current . '-01'))->modify('+1 month')->format('Y
 </header>
 <?php if ($saved): ?><div class="notice">保存しました。</div><?php endif; ?>
 
-<section class="admin-panel calendar-editor" data-calendar-editor>
+<section class="admin-panel calendar-editor" data-calendar-editor data-calendar-ai-endpoint="<?= e(url('/admin/ai-translate')) ?>" data-calendar-ai-csrf="<?= e(csrf_token()) ?>">
     <form class="admin-form" method="post" action="<?= e(url('/admin/business-calendar?month=' . $current)) ?>">
         <?= csrf_field() ?>
         <div class="calendar-editor-toolbar" data-calendar-status-toolbar>
@@ -61,16 +61,20 @@ $next = (new DateTimeImmutable($current . '-01'))->modify('+1 month')->format('Y
                     <div class="calendar-event-fields">
                         <label>
                             イベント名（日本語）
-                            <input name="event_name_ja[<?= e($day['date']) ?>]" value="<?= e($day['event_name_ja']) ?>" data-calendar-event-name="<?= e($day['date']) ?>">
+                            <input name="event_name_ja[<?= e($day['date']) ?>]" value="<?= e($day['event_name_ja']) ?>" data-calendar-event-name="<?= e($day['date']) ?>" data-calendar-event-ja>
                         </label>
                         <label>
                             イベント名（英語・任意）
-                            <input name="event_name_en[<?= e($day['date']) ?>]" value="<?= e($day['event_name_en']) ?>" data-calendar-event-name="<?= e($day['date']) ?>">
+                            <input name="event_name_en[<?= e($day['date']) ?>]" value="<?= e($day['event_name_en']) ?>" data-calendar-event-name="<?= e($day['date']) ?>" data-calendar-event-en>
                         </label>
                         <label class="calendar-event-url-field">
                             URL（任意）
                             <input name="event_url[<?= e($day['date']) ?>]" value="<?= e($day['event_url']) ?>" placeholder="https://example.com/">
                         </label>
+                        <div class="calendar-event-ai">
+                            <button class="button secondary" type="button" data-calendar-event-ai>AIで英訳</button>
+                            <span data-calendar-event-ai-status>日本語イベント名を入力すると英語欄へ反映できます。</span>
+                        </div>
                     </div>
                 </div>
             <?php endforeach; ?>

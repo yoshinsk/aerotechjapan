@@ -562,6 +562,8 @@ document.querySelectorAll('[data-calendar-editor]').forEach((editor) => {
   const eventPanels = new Map();
   const eventNameInputs = new Map();
   const emptyEventState = editor.querySelector('[data-calendar-event-empty]');
+  const calendarAiEndpoint = resolveAdminEndpoint(editor.getAttribute('data-calendar-ai-endpoint') || '');
+  const calendarAiCsrf = editor.getAttribute('data-calendar-ai-csrf') || '';
   const labels = {
     '': '基本設定',
     open: '営業日',
@@ -613,6 +615,76 @@ document.querySelectorAll('[data-calendar-editor]').forEach((editor) => {
     }
     eventNameInputs.get(date).push(input);
     input.addEventListener('input', () => updateEventBadge(date));
+  });
+
+  editor.querySelectorAll('[data-calendar-event-ai]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const panel = button.closest('[data-calendar-event-panel]');
+      const jaInput = panel?.querySelector('[data-calendar-event-ja]');
+      const enInput = panel?.querySelector('[data-calendar-event-en]');
+      const status = panel?.querySelector('[data-calendar-event-ai-status]');
+      const date = panel?.getAttribute('data-calendar-event-panel') || '';
+      const source = jaInput?.value.trim() || '';
+
+      const setStatus = (message) => {
+        if (status) {
+          status.textContent = message;
+        }
+      };
+
+      if (!panel || !jaInput || !enInput) {
+        setStatus('AI英訳の入力欄を確認できません。');
+        return;
+      }
+      if (!calendarAiEndpoint || !calendarAiCsrf) {
+        setStatus('AI英訳の送信先が設定されていません。');
+        return;
+      }
+      if (!source) {
+        setStatus('日本語イベント名を入力してください。');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = '英訳中...';
+      setStatus('AIで英訳しています。保存はまだ行われません。');
+
+      try {
+        const response = await fetch(calendarAiEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': calendarAiCsrf,
+          },
+          body: JSON.stringify({
+            context: `営業日カレンダーのイベント名 ${date}`,
+            fields: [{
+              label: 'イベント名',
+              target: 'event_name_en',
+              source,
+            }],
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.message || 'AI英訳に失敗しました。');
+        }
+
+        const translated = String(result.translations?.event_name_en || '').trim();
+        if (!translated) {
+          setStatus('AI英訳結果が空でした。日本語イベント名を確認してください。');
+          return;
+        }
+        enInput.value = translated;
+        enInput.dispatchEvent(new Event('input', { bubbles: true }));
+        setStatus('英語欄へ反映しました。内容を確認して保存してください。');
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : 'AI英訳に失敗しました。');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'AIで英訳';
+      }
+    });
   });
 
   editor.querySelectorAll('[data-calendar-date]').forEach((button) => {

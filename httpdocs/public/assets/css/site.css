@@ -1156,6 +1156,24 @@ button.calendar-day.is-active {
   grid-column: 1 / -1;
 }
 
+.calendar-event-ai {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 10px;
+}
+
+.calendar-event-ai .button {
+  min-height: 38px;
+  padding-block: 8px;
+}
+
+.calendar-event-ai span {
+  color: #b8c0c8;
+  font-size: 12px;
+}
+
 @media (min-width: 900px) {
   .calendar-event-fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -56,6 +56,7 @@ if ($path === '/admin/ai-translate') {
         'name_en', 'model_year_en', 'summary_en', 'notes_en',
         'title_en', 'body_en', 'meta_description_en',
         'description_en',
+        'event_name_en',
     ];
     $fields = [];
     foreach (($body['fields'] ?? []) as $field) {
