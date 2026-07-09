@@ -19,8 +19,7 @@ $pageTitle = ($title ?? config_value('app.name')) . ' | ' . config_value('app.na
 <header class="site-header navbar navbar-expand-lg">
     <div class="container-fluid site-header-inner">
         <a class="navbar-brand brand" href="<?= e(url('/')) ?>" aria-label="AERO TECH JAPAN">
-            <span class="brand-mark">ATJ</span>
-            <span class="brand-text">AERO TECH JAPAN</span>
+            <img class="brand-logo" src="<?= e(asset_url('img/aerotech-company-title.png')) ?>" alt="AERO TECH JAPAN" width="1200" height="180">
         </a>
         <button class="navbar-toggler nav-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="<?= e(t('メニュー', 'Menu')) ?>">
             <span></span><span></span><span></span>

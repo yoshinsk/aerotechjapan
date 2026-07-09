@@ -14,6 +14,7 @@
   --aero-red: #e12d2d;
   --aero-shell: 1480px;
   --aero-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  --aero-font-display: Georgia, "Times New Roman", "Yu Mincho", "Hiragino Mincho ProN", serif;
 }
 
 body.site-body {
@@ -35,6 +36,7 @@ body.site-body {
   top: 0;
   z-index: 1030;
   min-height: 76px;
+  padding-block: 0;
   background: rgba(0, 0, 0, .94);
   border-bottom: 1px solid var(--aero-line);
   backdrop-filter: blur(16px);
@@ -48,11 +50,19 @@ body.site-body {
 }
 
 .brand {
+  position: relative;
+  align-self: stretch;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  width: min(74vw, 320px);
+  min-height: 76px;
+  margin-block: 0;
+  padding: 0 16px 0 clamp(86px, 25vw, 150px);
   color: var(--aero-text);
+  background: #000 url("../img/aerotech-header-bg.jpg") left center / cover no-repeat;
   font-weight: 750;
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .brand:hover,
@@ -60,20 +70,23 @@ body.site-body {
   color: var(--aero-text);
 }
 
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  background: var(--aero-red);
-  color: #fff;
-  font-size: 14px;
-  line-height: 1;
+.brand::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(90deg, rgba(160, 0, 0, 0), rgba(0, 0, 0, .12) 40%, rgba(0, 0, 0, .9) 100%);
+  pointer-events: none;
 }
 
-.brand-text {
-  font-size: clamp(15px, 3.8vw, 22px);
-  white-space: nowrap;
+.brand-logo {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 40px;
+  object-fit: contain;
 }
 
 .nav-toggle {
@@ -175,9 +188,12 @@ body.site-body {
 }
 
 .hero h1 {
-  max-width: 850px;
-  font-size: clamp(42px, 12vw, 108px);
-  font-weight: 650;
+  max-width: 980px;
+  font-family: var(--aero-font-display);
+  font-size: clamp(42px, 10.5vw, 104px);
+  font-weight: 700;
+  line-height: .98;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, .44);
 }
 
 .hero p {
@@ -928,6 +944,15 @@ button.button {
 }
 
 @media (min-width: 992px) {
+  .brand {
+    width: clamp(340px, 35vw, 560px);
+    padding-left: clamp(126px, 17vw, 245px);
+  }
+
+  .brand-logo {
+    max-height: 44px;
+  }
+
   .hero-content {
     grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
     align-items: end;
