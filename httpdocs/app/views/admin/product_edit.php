@@ -74,7 +74,7 @@
         return $value !== strip_tags($value) ? sanitize_rich_html($value) : e($value);
     };
     ?>
-    <section class="admin-panel product-spec-editor" data-spec-editor data-spec-ai-endpoint="<?= e(url('/admin/ai-clean-html')) ?>" data-spec-ai-csrf="<?= e(csrf_token()) ?>">
+    <section class="admin-panel product-spec-editor" data-spec-editor data-spec-ai-endpoint="<?= e(url('/admin/ai-clean-html')) ?>" data-spec-ai-csrf="<?= e(csrf_token()) ?>" data-spec-translate-endpoint="<?= e(url('/admin/ai-translate')) ?>" data-spec-translate-csrf="<?= e(csrf_token()) ?>">
         <div class="spec-editor-head">
             <div>
                 <h2>SPEC</h2>
@@ -123,6 +123,7 @@
                         <div class="spec-rich-field rich-content" contenteditable="true" role="textbox" aria-multiline="true" data-spec-field><?= $renderSpecEditorCell($spec['value_en'] ?? '') ?></div>
                     </div>
                     <div class="spec-editor-actions">
+                        <button class="button secondary" type="button" data-spec-ai-translate>英語AI入力</button>
                         <button class="button secondary" type="button" data-spec-move-up>上へ</button>
                         <button class="button secondary" type="button" data-spec-move-down>下へ</button>
                         <button class="button danger" type="button" data-spec-remove>削除</button>
@@ -153,6 +154,7 @@
                     <div class="spec-rich-field rich-content" contenteditable="true" role="textbox" aria-multiline="true" data-spec-field></div>
                 </div>
                 <div class="spec-editor-actions">
+                    <button class="button secondary" type="button" data-spec-ai-translate>英語AI入力</button>
                     <button class="button secondary" type="button" data-spec-move-up>上へ</button>
                     <button class="button secondary" type="button" data-spec-move-down>下へ</button>
                     <button class="button danger" type="button" data-spec-remove>削除</button>

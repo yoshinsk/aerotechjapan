@@ -293,6 +293,39 @@ const normalizeRichEditorHtml = (html) => String(html || '')
   .replace(/<font\s+[^>]*color=["']?([^"'>\s]+)["']?[^>]*>/gi, '<span style="color: $1;">')
   .replace(/<\/font>/gi, '</span>');
 
+const rgbToHexColor = (color) => {
+  const value = String(color || '').trim();
+  if (/^#[0-9a-f]{6}$/i.test(value)) {
+    return value.toLowerCase();
+  }
+  const match = value.match(/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/i);
+  if (!match) {
+    return '';
+  }
+  return match.slice(1, 4)
+    .map((part) => Math.max(0, Math.min(255, Number(part))).toString(16).padStart(2, '0'))
+    .join('')
+    .replace(/^/, '#');
+};
+
+const elementTextColor = (element, fallback = '#f4f4f4') => {
+  if (!element) {
+    return fallback;
+  }
+  return rgbToHexColor(getComputedStyle(element).color) || fallback;
+};
+
+const selectedTextColor = (root, fallback = '#f4f4f4') => {
+  const selection = window.getSelection();
+  let node = selection?.anchorNode || null;
+  if (node?.nodeType === Node.TEXT_NODE) {
+    node = node.parentElement;
+  }
+  return node instanceof Element && root?.contains(node)
+    ? elementTextColor(node, fallback)
+    : elementTextColor(root, fallback);
+};
+
 document.querySelectorAll('textarea[data-rich-editor]').forEach((textarea) => {
   if (textarea.dataset.richEditorReady === '1') {
     return;
@@ -330,6 +363,7 @@ document.querySelectorAll('textarea[data-rich-editor]').forEach((textarea) => {
     visual.focus();
     document.execCommand(command, false, value);
     setHtml(visual.innerHTML);
+    updateColorInput();
   };
   const makeButton = (label, action, className = 'button secondary') => {
     const button = document.createElement('button');
@@ -346,6 +380,7 @@ document.querySelectorAll('textarea[data-rich-editor]').forEach((textarea) => {
       visual.hidden = false;
       mode = 'visual';
       setStatus('WYSIWYG編集中です。');
+      updateColorInput();
       return;
     }
     syncToTextarea();
@@ -420,15 +455,22 @@ document.querySelectorAll('textarea[data-rich-editor]').forEach((textarea) => {
   colorLabel.textContent = '文字色';
   const colorInput = document.createElement('input');
   colorInput.type = 'color';
-  colorInput.value = '#4dd8ff';
+  colorInput.value = '#f4f4f4';
+  const updateColorInput = () => {
+    colorInput.value = selectedTextColor(visual, elementTextColor(visual));
+  };
   colorInput.addEventListener('input', () => runCommand('foreColor', colorInput.value));
   colorLabel.append(colorInput);
 
   toolbar.append(visualButton, htmlButton, boldButton, italicButton, ulButton, olButton, linkButton, colorLabel, cleanButton);
   wrapper.append(toolbar, visual, status);
   textarea.insertAdjacentElement('afterend', wrapper);
+  updateColorInput();
 
   visual.addEventListener('input', syncToTextarea);
+  visual.addEventListener('focus', updateColorInput);
+  visual.addEventListener('mouseup', updateColorInput);
+  visual.addEventListener('keyup', updateColorInput);
   textarea.addEventListener('input', () => {
     if (mode === 'visual') {
       visual.innerHTML = normalizeRichEditorHtml(textarea.value);
@@ -462,7 +504,7 @@ document.querySelectorAll('textarea[data-html-fragment-helper]').forEach((textar
   colorLabel.className = 'rich-editor-color';
   colorLabel.textContent = '文字色';
   colorInput.type = 'color';
-  colorInput.value = '#e12d2d';
+  colorInput.value = elementTextColor(textarea);
   colorLabel.append(colorInput);
 
   const setStatus = (message) => {
@@ -566,6 +608,8 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
   const template = editor.querySelector('template[data-spec-template]');
   const endpoint = resolveAdminEndpoint(editor.getAttribute('data-spec-ai-endpoint') || '');
   const csrf = editor.getAttribute('data-spec-ai-csrf') || '';
+  const translateEndpoint = resolveAdminEndpoint(editor.getAttribute('data-spec-translate-endpoint') || '');
+  const translateCsrf = editor.getAttribute('data-spec-translate-csrf') || '';
   const status = editor.querySelector('[data-spec-status]');
   const colorInput = editor.querySelector('[data-spec-color]');
   let activeField = null;
@@ -576,6 +620,14 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
       status.textContent = message;
     }
   };
+  const updateSpecColorInput = () => {
+    if (colorInput) {
+      colorInput.value = selectedTextColor(activeField || editor, elementTextColor(activeField || editor));
+    }
+  };
+  if (colorInput) {
+    colorInput.value = elementTextColor(editor.querySelector('[data-spec-field]') || editor);
+  }
   const fieldHtmlValue = (field) => {
     if (!field || field.textContent.trim() === '') {
       return '';
@@ -598,6 +650,7 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
     }
     if (activeField.contains(selection.anchorNode) && activeField.contains(selection.focusNode)) {
       activeRange = selection.getRangeAt(0).cloneRange();
+      updateSpecColorInput();
     }
   };
   const restoreSelection = () => {
@@ -617,6 +670,7 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
     editor.querySelectorAll('[data-spec-field].is-active').forEach((item) => item.classList.remove('is-active'));
     field.classList.add('is-active');
     setStatus('選択中のセルを編集できます。');
+    updateSpecColorInput();
     setTimeout(saveSelection, 0);
   };
   const runSpecCommand = (command, value = null) => {
@@ -625,8 +679,9 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
       return;
     }
     document.execCommand(command, false, value);
-    syncField(activeField);
+    setFieldHtml(activeField, activeField.innerHTML);
     saveSelection();
+    updateSpecColorInput();
   };
   const setFieldHtml = (field, html) => {
     field.innerHTML = normalizeRichEditorHtml(html);
@@ -672,6 +727,80 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
     activeRange = null;
     setStatus('SPEC行を削除しました。');
   };
+  const specFieldByName = (row, name) => {
+    const source = [...row.querySelectorAll('textarea[data-spec-source]')]
+      .find((item) => item.getAttribute('name') === name);
+    return source?.closest('.spec-editor-cell')?.querySelector('[data-spec-field]') || null;
+  };
+  const translateSpecRow = async (row, button) => {
+    const labelJaField = specFieldByName(row, 'spec_label_ja[]');
+    const valueJaField = specFieldByName(row, 'spec_value_ja[]');
+    const labelEnField = specFieldByName(row, 'spec_label_en[]');
+    const valueEnField = specFieldByName(row, 'spec_value_en[]');
+    [labelJaField, valueJaField, labelEnField, valueEnField].forEach(syncField);
+
+    const fields = [];
+    const labelSource = fieldHtmlValue(labelJaField);
+    const valueSource = fieldHtmlValue(valueJaField);
+    if (labelSource !== '') {
+      fields.push({ label: 'SPEC label', target: 'spec_label_en', source: labelSource });
+    }
+    if (valueSource !== '') {
+      fields.push({ label: 'SPEC value', target: 'spec_value_en', source: valueSource });
+    }
+    if (!fields.length) {
+      setStatus('英語入力する日本語SPECがありません。');
+      return;
+    }
+    if (!translateEndpoint || !translateCsrf) {
+      setStatus('AI英語入力の送信先が設定されていません。');
+      return;
+    }
+
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = '英語入力中...';
+    setStatus('選択行のSPECをAIで英語入力しています。保存はまだ行われません。');
+    try {
+      const response = await fetch(translateEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': translateCsrf,
+        },
+        body: JSON.stringify({
+          context: [
+            document.querySelector('h1')?.textContent.trim() || '',
+            getFormControl(form, 'name_ja')?.value.trim() || '',
+            getFormControl(form, 'model_year_ja')?.value.trim() || '',
+          ].filter(Boolean).join(' / '),
+          fields,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        throw new Error(result.message || 'AI英語入力に失敗しました。');
+      }
+      const translations = result.translations || {};
+      let applied = 0;
+      if (typeof translations.spec_label_en === 'string' && translations.spec_label_en.trim() !== '' && labelEnField) {
+        setFieldHtml(labelEnField, translations.spec_label_en.trim());
+        applied += 1;
+      }
+      if (typeof translations.spec_value_en === 'string' && translations.spec_value_en.trim() !== '' && valueEnField) {
+        setFieldHtml(valueEnField, translations.spec_value_en.trim());
+        applied += 1;
+      }
+      setStatus(applied > 0
+        ? `SPEC英語欄へ${applied}件反映しました。内容を確認して保存してください。`
+        : 'AI英語入力結果に反映できる項目がありませんでした。');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'AI英語入力に失敗しました。');
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText || '英語AI入力';
+    }
+  };
 
   editor.querySelectorAll('[data-spec-row]').forEach(initRow);
 
@@ -685,7 +814,7 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
     button.addEventListener('click', () => runSpecCommand(button.getAttribute('data-spec-command') || ''));
   });
   editor.querySelector('[data-spec-apply-color]')?.addEventListener('click', () => {
-    runSpecCommand('foreColor', colorInput?.value || '#e12d2d');
+    runSpecCommand('foreColor', colorInput?.value || selectedTextColor(activeField || editor));
   });
   editor.querySelector('[data-spec-link]')?.addEventListener('click', () => {
     const href = window.prompt('リンクURLを入力してください。', 'https://');
@@ -750,7 +879,9 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
     if (!row) {
       return;
     }
-    if (event.target.closest('[data-spec-remove]')) {
+    if (event.target.closest('[data-spec-ai-translate]')) {
+      translateSpecRow(row, event.target.closest('[data-spec-ai-translate]'));
+    } else if (event.target.closest('[data-spec-remove]')) {
       removeRow(row);
     } else if (event.target.closest('[data-spec-move-up]')) {
       const previous = row.previousElementSibling?.matches('[data-spec-row]') ? row.previousElementSibling : null;
