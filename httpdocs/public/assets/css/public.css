@@ -929,13 +929,99 @@ button.button {
 
 @media (min-width: 992px) {
   .hero-content {
-    grid-template-columns: minmax(0, 1fr) minmax(330px, 430px);
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
     align-items: end;
   }
 
   .hero-calendar {
+    width: min(100%, 300px);
+    padding: 14px;
     justify-self: end;
     margin-bottom: 10px;
+  }
+
+  .hero-calendar-head {
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .hero-calendar-head .eyebrow {
+    margin-bottom: 4px;
+    font-size: 10px;
+  }
+
+  .hero-calendar-head h2 {
+    font-size: 24px;
+  }
+
+  .hero-calendar-side {
+    gap: 6px;
+  }
+
+  .hero-calendar-side > span {
+    font-size: 10px;
+  }
+
+  .hero-calendar-nav {
+    gap: 4px;
+  }
+
+  .hero-calendar-nav a {
+    width: 22px;
+    height: 22px;
+    font-size: 16px;
+  }
+
+  .hero-calendar-grid {
+    gap: 3px;
+  }
+
+  .hero-calendar-weekday {
+    font-size: 9px;
+  }
+
+  .hero-calendar-day {
+    min-height: 27px;
+    padding: 3px 1px;
+    border-radius: 4px;
+  }
+
+  .hero-calendar-number {
+    font-size: 12px;
+  }
+
+  .hero-calendar-status {
+    font-size: 8px;
+  }
+
+  .hero-calendar-event-dot {
+    width: 4px;
+    height: 4px;
+  }
+
+  .hero-calendar-legend {
+    gap: 7px;
+    margin-top: 8px;
+    font-size: 9px;
+  }
+
+  .hero-calendar-legend span {
+    gap: 4px;
+  }
+
+  .hero-calendar-legend i {
+    width: 6px;
+    height: 6px;
+  }
+
+  .hero-calendar-events {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  .hero-calendar-events p {
+    margin-bottom: 4px;
+    font-size: 9px;
   }
 
   .site-nav {
