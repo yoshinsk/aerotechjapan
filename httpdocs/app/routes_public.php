@@ -82,6 +82,14 @@ if (isset($legacyCategoryMap[$path])) {
     redirect_to($legacyCategoryMap[$path]);
 }
 
+if ($path === '/pages') {
+    render('pages_index', [
+        'pages' => $repo->pages(true),
+        'title' => t('サイトマップ', 'Sitemap'),
+    ]);
+    return;
+}
+
 if (preg_match('#^/garage-file/([^/]+)\.html$#', $path, $matches)) {
     redirect_to('/products/' . $matches[1]);
 }

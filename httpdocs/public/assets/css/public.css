@@ -4,21 +4,25 @@
  */
 
 :root {
-  --aero-bg: #050505;
-  --aero-surface: #111;
-  --aero-surface-2: #181818;
-  --aero-line: #2b2b2b;
-  --aero-text: #f4f4f4;
-  --aero-muted: #a8a8a8;
-  --aero-cyan: #4dd8ff;
+  --aero-bg: #000;
+  --aero-surface: #0b0b0b;
+  --aero-surface-2: #111;
+  --aero-line: rgba(255, 255, 255, .14);
+  --aero-text: #f7f7f7;
+  --aero-muted: #b4b8bd;
+  --aero-cyan: #52d9ff;
   --aero-red: #e12d2d;
+  --aero-shell: 1480px;
+  --aero-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
 }
 
 body.site-body {
   background: var(--aero-bg);
   color: var(--aero-text);
-  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  font-family: var(--aero-font-sans);
   line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 .site-body a {
@@ -30,14 +34,16 @@ body.site-body {
   position: sticky;
   top: 0;
   z-index: 1030;
-  min-height: 72px;
-  background: rgba(5, 5, 5, .94);
+  min-height: 76px;
+  background: rgba(0, 0, 0, .94);
   border-bottom: 1px solid var(--aero-line);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px);
 }
 
 .site-header-inner {
-  min-height: 72px;
+  width: min(100%, var(--aero-shell));
+  min-height: 76px;
+  margin-inline: auto;
   padding-inline: clamp(18px, 4vw, 56px);
 }
 
@@ -46,7 +52,7 @@ body.site-body {
   align-items: center;
   gap: 10px;
   color: var(--aero-text);
-  font-weight: 800;
+  font-weight: 750;
 }
 
 .brand:hover,
@@ -57,8 +63,8 @@ body.site-body {
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   background: var(--aero-red);
   color: #fff;
   font-size: 14px;
@@ -78,7 +84,7 @@ body.site-body {
   padding: 10px;
   background: transparent;
   border: 1px solid var(--aero-line);
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: none;
 }
 
@@ -101,7 +107,9 @@ body.site-body {
 
 .site-nav .nav-link {
   color: var(--aero-muted);
-  border-bottom: 1px solid #202020;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+  font-size: 15px;
+  font-weight: 500;
 }
 
 .site-nav .nav-link:hover,
@@ -111,7 +119,7 @@ body.site-body {
 }
 
 .hero {
-  min-height: calc(100svh - 72px);
+  min-height: calc(100svh - 76px);
   position: relative;
   overflow: hidden;
 }
@@ -140,7 +148,8 @@ body.site-body {
   display: grid;
   gap: clamp(22px, 4vw, 42px);
   width: min(100%, 1480px);
-  min-height: calc(100svh - 72px);
+  min-height: calc(100svh - 76px);
+  margin-inline: auto;
   align-content: end;
   padding: clamp(88px, 14vw, 140px) clamp(18px, 4vw, 56px) 48px;
 }
@@ -154,7 +163,7 @@ body.site-body {
   color: var(--aero-cyan);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: .08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -168,6 +177,7 @@ body.site-body {
 .hero h1 {
   max-width: 850px;
   font-size: clamp(42px, 12vw, 108px);
+  font-weight: 650;
 }
 
 .hero p {
@@ -180,9 +190,9 @@ body.site-body {
   width: min(100%, 430px);
   padding: clamp(14px, 2vw, 20px);
   color: var(--aero-text);
-  background: linear-gradient(180deg, rgba(9, 9, 9, .78), rgba(9, 9, 9, .62));
-  border: 1px solid rgba(255, 255, 255, .18);
-  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .82), rgba(10, 10, 10, .66));
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 6px;
   box-shadow: 0 22px 70px rgba(0, 0, 0, .42);
   backdrop-filter: blur(12px);
 }
@@ -357,7 +367,7 @@ body.site-body {
   color: var(--aero-cyan);
   font-size: 11px;
   font-weight: 900;
-  letter-spacing: .08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -410,7 +420,7 @@ button.button {
   color: #fff;
   background: var(--aero-red);
   border: 1px solid var(--aero-red);
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
@@ -435,6 +445,9 @@ button.button {
 }
 
 .section {
+  width: min(100%, var(--aero-shell));
+  max-width: var(--aero-shell);
+  margin-inline: auto;
   padding: clamp(44px, 8vw, 86px) clamp(18px, 4vw, 56px);
 }
 
@@ -465,7 +478,7 @@ button.button {
   color: var(--aero-muted);
   background: var(--aero-surface);
   border: 1px solid var(--aero-line);
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .category-chip:hover,
@@ -480,13 +493,25 @@ button.button {
 }
 
 .product-card,
-.news-card {
+.news-card,
+.page-card {
   height: 100%;
   color: var(--aero-text);
   background: var(--aero-surface);
   border: 1px solid var(--aero-line);
-  border-radius: 8px;
+  border-radius: 4px;
   overflow: hidden;
+}
+
+.page-card {
+  min-height: 100%;
+  transition: border-color .2s ease, transform .2s ease;
+}
+
+.page-card:hover,
+.page-card:focus {
+  border-color: var(--aero-cyan);
+  transform: translateY(-2px);
 }
 
 .card-link {
@@ -539,7 +564,7 @@ button.button {
   object-fit: contain;
   background: #111;
   border: 1px solid var(--aero-line);
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .product-layout {
@@ -598,7 +623,7 @@ button.button {
   width: 100%;
   margin-top: 18px;
   overflow-x: auto;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .spec-table-wrap .spec-table {
@@ -673,7 +698,7 @@ button.button {
 
 .rich-content img {
   border: 1px solid var(--aero-line);
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .price-list-groups,
@@ -711,7 +736,7 @@ button.button {
   padding: 18px;
   background: var(--aero-surface);
   border: 1px solid var(--aero-line);
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .price-list-card:hover,
@@ -828,7 +853,7 @@ button.button {
   padding: 12px;
   background: var(--aero-surface);
   border: 1px solid var(--aero-line);
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .calendar-events h4 {
@@ -861,6 +886,8 @@ button.button {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
+  width: min(100%, var(--aero-shell));
+  margin-inline: auto;
   padding: 28px clamp(18px, 4vw, 56px);
   color: var(--aero-muted);
   border-top: 1px solid var(--aero-line);
@@ -881,7 +908,7 @@ button.button {
   color: #062c19;
   background: #d9fbea;
   border: 1px solid #9be2bb;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .error-box {
@@ -889,7 +916,7 @@ button.button {
   color: #3b0a0a;
   background: #fff0f0;
   border: 1px solid #e6a2a2;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .hp-field {

@@ -73,6 +73,15 @@ function url(string $path = ''): string
     return base_path() . ($path === '/' ? '/' : $path);
 }
 
+function public_page_url(array $page): string
+{
+    $slug = trim((string)($page['slug'] ?? ''));
+    if ($slug === 'home') {
+        return url('/');
+    }
+    return url('/page/' . rawurlencode($slug));
+}
+
 function asset_url(string $path): string
 {
     return url('/assets/' . ltrim($path, '/'));

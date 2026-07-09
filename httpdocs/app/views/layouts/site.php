@@ -48,6 +48,7 @@ $pageTitle = ($title ?? config_value('app.name')) . ' | ' . config_value('app.na
         <span><?= e(t('大阪府高槻市下田部町2丁目54番1号', '2-54-1 Shimotanabe-cho, Takatsuki, Osaka, Japan')) ?></span>
     </div>
     <nav>
+        <a href="<?= e(url('/pages')) ?>"><?= e(t('サイトマップ', 'Sitemap')) ?></a>
         <a href="<?= e(url('/page/privacy')) ?>"><?= e(t('プライバシーポリシー', 'Privacy Policy')) ?></a>
         <a href="<?= e(url('/admin')) ?>">CMS</a>
     </nav>
