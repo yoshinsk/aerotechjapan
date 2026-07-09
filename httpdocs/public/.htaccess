@@ -1,5 +1,7 @@
 DirectoryIndex index.php
 AddDefaultCharset UTF-8
+AddType application/manifest+json .webmanifest
+AddType image/x-icon .ico
 
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"

@@ -12,6 +12,11 @@ $pageTitle = ($title ?? config_value('app.name')) . ' | ' . config_value('app.na
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($pageTitle) ?></title>
     <meta name="description" content="<?= e(t('エアロテックジャパン公式サイト。エアロパーツ、ボディキット、OEM製作、イベント情報を掲載しています。', 'Official website of AERO TECH JAPAN. Body kits, aero parts, OEM production, and news.')) ?>">
+    <link rel="icon" href="<?= e(url('/favicon.ico')) ?>?v=20260709" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= e(asset_url('img/favicon-32x32.png')) ?>?v=20260709">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?= e(asset_url('img/favicon-16x16.png')) ?>?v=20260709">
+    <link rel="apple-touch-icon" href="<?= e(asset_url('img/apple-touch-icon.png')) ?>?v=20260709">
+    <link rel="manifest" href="<?= e(url('/site.webmanifest')) ?>?v=20260709">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="<?= e(asset_url('css/public.css')) ?>">
 </head>
