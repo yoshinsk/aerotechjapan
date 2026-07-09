@@ -290,8 +290,80 @@ document.querySelectorAll('[data-translation-helper]').forEach((helper) => {
 });
 
 const normalizeRichEditorHtml = (html) => String(html || '')
+  .replace(/<b(\s[^>]*)?>/gi, '<strong>')
+  .replace(/<\/b>/gi, '</strong>')
+  .replace(/<i(\s[^>]*)?>/gi, '<em>')
+  .replace(/<\/i>/gi, '</em>')
   .replace(/<font\s+[^>]*color=["']?([^"'>\s]+)["']?[^>]*>/gi, '<span style="color: $1;">')
   .replace(/<\/font>/gi, '</span>');
+
+const htmlCleanupInstructionOptions = [
+  {
+    id: 'responsive_images',
+    label: '画像を枠内に収める',
+    description: '大きな画像の固定サイズや余分な囲みを整理します。',
+  },
+  {
+    id: 'simplify_legacy_html',
+    label: '旧HTMLを整理する',
+    description: '空タグ、過剰なdiv/span、連続brを減らします。',
+  },
+  {
+    id: 'preserve_colors',
+    label: '文字色を保持する',
+    description: '文字色はspanのcolor指定だけに整えます。',
+  },
+  {
+    id: 'compact_spec',
+    label: 'SPEC向けに簡潔化',
+    description: '商品SPECの項目・価格を崩さず短く保ちます。',
+  },
+  {
+    id: 'list_from_lines',
+    label: '箇条書き化を許可',
+    description: '短い行の連続を必要に応じてリスト化します。',
+  },
+  {
+    id: 'keep_line_breaks',
+    label: '改行を保持する',
+    description: '価格、型番、注意書きの意図的な改行を残します。',
+  },
+];
+
+const createHtmlCleanupInstructionPanel = (defaultIds = []) => {
+  const selectedDefaults = new Set(defaultIds);
+  const details = document.createElement('details');
+  const summary = document.createElement('summary');
+  const list = document.createElement('div');
+
+  details.className = 'ai-instruction-picker';
+  summary.textContent = 'AI整形のカスタム指示';
+  list.className = 'ai-instruction-list';
+
+  htmlCleanupInstructionOptions.forEach((option) => {
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+    const text = document.createElement('span');
+    const description = document.createElement('small');
+
+    label.className = 'ai-instruction-option';
+    input.type = 'checkbox';
+    input.value = option.id;
+    input.checked = selectedDefaults.has(option.id);
+    text.textContent = option.label;
+    description.textContent = option.description;
+
+    label.append(input, text, description);
+    list.append(label);
+  });
+
+  details.append(summary, list);
+  return {
+    element: details,
+    selectedIds: () => [...details.querySelectorAll('input[type="checkbox"]:checked')]
+      .map((input) => input.value),
+  };
+};
 
 const rgbToHexColor = (color) => {
   const value = String(color || '').trim();
@@ -339,6 +411,7 @@ document.querySelectorAll('textarea[data-rich-editor]').forEach((textarea) => {
   const toolbar = document.createElement('div');
   const visual = document.createElement('div');
   const status = document.createElement('div');
+  const instructionPicker = createHtmlCleanupInstructionPanel(['responsive_images', 'simplify_legacy_html']);
   let mode = 'visual';
 
   wrapper.className = 'rich-editor';
@@ -361,6 +434,7 @@ document.querySelectorAll('textarea[data-rich-editor]').forEach((textarea) => {
   };
   const runCommand = (command, value = null) => {
     visual.focus();
+    document.execCommand('styleWithCSS', false, false);
     document.execCommand(command, false, value);
     setHtml(visual.innerHTML);
     updateColorInput();
@@ -432,6 +506,7 @@ document.querySelectorAll('textarea[data-rich-editor]').forEach((textarea) => {
         },
         body: JSON.stringify({
           context: document.querySelector('h1')?.textContent.trim() || '',
+          instructions: instructionPicker.selectedIds(),
           html: textarea.value,
         }),
       });
@@ -463,7 +538,7 @@ document.querySelectorAll('textarea[data-rich-editor]').forEach((textarea) => {
   colorLabel.append(colorInput);
 
   toolbar.append(visualButton, htmlButton, boldButton, italicButton, ulButton, olButton, linkButton, colorLabel, cleanButton);
-  wrapper.append(toolbar, visual, status);
+  wrapper.append(toolbar, instructionPicker.element, visual, status);
   textarea.insertAdjacentElement('afterend', wrapper);
   updateColorInput();
 
@@ -497,6 +572,7 @@ document.querySelectorAll('textarea[data-html-fragment-helper]').forEach((textar
   const status = document.createElement('div');
   const colorLabel = document.createElement('label');
   const colorInput = document.createElement('input');
+  const instructionPicker = createHtmlCleanupInstructionPanel(['responsive_images', 'simplify_legacy_html']);
 
   helper.className = 'html-fragment-helper';
   toolbar.className = 'rich-editor-toolbar';
@@ -573,6 +649,7 @@ document.querySelectorAll('textarea[data-html-fragment-helper]').forEach((textar
         },
         body: JSON.stringify({
           context: document.querySelector('h1')?.textContent.trim() || '',
+          instructions: instructionPicker.selectedIds(),
           html: selected,
         }),
       });
@@ -591,7 +668,7 @@ document.querySelectorAll('textarea[data-html-fragment-helper]').forEach((textar
   });
 
   toolbar.append(colorLabel, colorButton, strongButton, cleanButton);
-  helper.append(toolbar, status);
+  helper.append(toolbar, instructionPicker.element, status);
   textarea.insertAdjacentElement('afterend', helper);
 });
 
@@ -612,6 +689,7 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
   const translateCsrf = editor.getAttribute('data-spec-translate-csrf') || '';
   const status = editor.querySelector('[data-spec-status]');
   const colorInput = editor.querySelector('[data-spec-color]');
+  const instructionPicker = createHtmlCleanupInstructionPanel(['responsive_images', 'compact_spec', 'keep_line_breaks']);
   let activeField = null;
   let activeRange = null;
 
@@ -678,6 +756,7 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
       setStatus('編集するセルをクリックしてください。');
       return;
     }
+    document.execCommand('styleWithCSS', false, false);
     document.execCommand(command, false, value);
     setFieldHtml(activeField, activeField.innerHTML);
     saveSelection();
@@ -803,6 +882,7 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
   };
 
   editor.querySelectorAll('[data-spec-row]').forEach(initRow);
+  editor.querySelector('[data-spec-toolbar]')?.insertAdjacentElement('afterend', instructionPicker.element);
 
   editor.querySelector('[data-spec-add-row]')?.addEventListener('click', addRow);
   editor.querySelector('[data-spec-toolbar]')?.addEventListener('mousedown', (event) => {
@@ -858,6 +938,7 @@ document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
         },
         body: JSON.stringify({
           context: document.querySelector('h1')?.textContent.trim() || '',
+          instructions: instructionPicker.selectedIds(),
           html,
         }),
       });

@@ -855,6 +855,57 @@ button.button {
   font-size: 12px;
 }
 
+.ai-instruction-picker {
+  padding: 10px 12px;
+  color: #d9e2ea;
+  background: #101820;
+  border: 1px solid #2f4657;
+  border-radius: 8px;
+}
+
+.ai-instruction-picker summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ai-instruction-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ai-instruction-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  align-items: start;
+  margin: 0;
+  padding: 8px;
+  background: #0b0f14;
+  border: 1px solid #263746;
+  border-radius: 7px;
+}
+
+.ai-instruction-option input {
+  width: auto;
+  min-height: 0;
+  margin-top: 3px;
+}
+
+.ai-instruction-option span {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ai-instruction-option small {
+  grid-column: 2;
+  color: #aeb8c2;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .html-fragment-helper {
   display: grid;
   gap: 8px;
@@ -953,6 +1004,19 @@ button.button {
 
 .spec-rich-field p:last-child {
   margin-bottom: 0;
+}
+
+.rich-editor-visual img,
+.spec-rich-field img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 360px;
+  object-fit: contain;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
 }
 
 .spec-editor-actions {

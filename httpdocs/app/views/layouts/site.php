@@ -18,7 +18,7 @@ $pageTitle = ($title ?? config_value('app.name')) . ' | ' . config_value('app.na
     <link rel="apple-touch-icon" href="<?= e(asset_url('img/apple-touch-icon.png')) ?>?v=20260709">
     <link rel="manifest" href="<?= e(url('/site.webmanifest')) ?>?v=20260709">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= e(asset_url('css/public.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset_url('css/public.css')) ?>?v=20260709-html-ai">
 </head>
 <body class="site-body">
 <header class="site-header navbar navbar-expand-lg">
@@ -58,6 +58,6 @@ $pageTitle = ($title ?? config_value('app.name')) . ' | ' . config_value('app.na
     </nav>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= e(asset_url('js/site.js')) ?>"></script>
+<script src="<?= e(asset_url('js/site.js')) ?>?v=20260709-html-ai"></script>
 </body>
 </html>

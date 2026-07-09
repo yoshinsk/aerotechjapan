@@ -713,8 +713,20 @@ button.button {
 }
 
 .rich-content img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: min(72svh, 760px);
+  object-fit: contain;
+  background: #111;
   border: 1px solid var(--aero-line);
   border-radius: 4px;
+}
+
+.spec-cell-rich img {
+  max-width: min(100%, 260px);
+  max-height: 240px;
 }
 
 .price-list-groups,

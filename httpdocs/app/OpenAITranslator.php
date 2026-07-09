@@ -215,7 +215,7 @@ final class OpenAITranslator
         }
     }
 
-    public function cleanHtml(string $html, string $context = ''): string
+    public function cleanHtml(string $html, string $context = '', array $instructionIds = []): string
     {
         $apiKey = trim((string)($this->config['api_key'] ?? ''));
         if ($apiKey === '') {
@@ -239,20 +239,24 @@ final class OpenAITranslator
             'required' => ['html'],
         ];
 
+        $instructions = [
+            'You repair and tidy CMS HTML fragments for an automotive website.',
+            'Preserve the original text, language, meaning, brand names, product names, measurements, and URLs.',
+            'Do not add new facts, marketing claims, sections, links, or images.',
+            'Use only these tags: h2, h3, p, br, strong, em, ul, ol, li, table, thead, tbody, tr, th, td, a, img, div, section, span.',
+            'For text color, use span style="color: #RRGGBB;". For emphasis, prefer strong and em. Do not use font tags or unsafe inline CSS.',
+            'Remove scripts, event handlers, iframes, forms, style tags, and unsafe attributes.',
+            'Return a valid HTML fragment, not a full HTML document.',
+        ];
+        array_push($instructions, ...$this->htmlCleanupInstructionTexts($instructionIds));
+
         $payload = [
             'model' => $this->config['model'] ?? 'gpt-5.4-mini',
             'reasoning' => ['effort' => $this->config['reasoning_effort'] ?? 'low'],
-            'instructions' => implode("\n", [
-                'You repair and tidy CMS HTML fragments for an automotive website.',
-                'Preserve the original text, language, meaning, brand names, product names, measurements, and URLs.',
-                'Do not add new facts, marketing claims, sections, links, or images.',
-                'Use only these tags: h2, h3, p, br, strong, em, ul, ol, li, table, thead, tbody, tr, th, td, a, img, div, section, span.',
-                'For text color, use span style="color: #RRGGBB;" only. Do not use font tags or other inline CSS.',
-                'Remove scripts, event handlers, iframes, forms, style tags, and unsafe attributes.',
-                'Return a valid HTML fragment, not a full HTML document.',
-            ]),
+            'instructions' => implode("\n", $instructions),
             'input' => json_encode([
                 'context' => mb_substr($context, 0, 200),
+                'selected_instruction_ids' => array_values(array_unique(array_map('strval', $instructionIds))),
                 'html' => $html,
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'text' => [
@@ -272,6 +276,34 @@ final class OpenAITranslator
             throw new RuntimeException('OpenAI APIの応答をJSONとして解析できませんでした。');
         }
         return trim((string)($decoded['html'] ?? ''));
+    }
+
+    /**
+     * CMSから送られたチェックボックスIDを、固定済みの安全なHTML整形指示へ変換します。
+     * 管理画面から自由文プロンプトを渡さず、意図しないAI命令の混入を避けます。
+     *
+     * @param array<int, mixed> $instructionIds
+     * @return array<int, string>
+     */
+    private function htmlCleanupInstructionTexts(array $instructionIds): array
+    {
+        $catalog = [
+            'responsive_images' => 'When img tags are present, preserve only the original src and alt, remove fixed width or height intent, avoid oversized wrappers, and make the fragment suitable for responsive CSS display. Do not invent image URLs.',
+            'simplify_legacy_html' => 'Remove empty spacer elements, redundant nested div or span tags, repeated br tags, and obsolete presentational markup while preserving visible content order.',
+            'preserve_colors' => 'Preserve meaningful text colors only as span style="color: #RRGGBB;". Remove all other inline style declarations.',
+            'compact_spec' => 'For product SPEC cells, keep compact label and value content. Avoid creating large layout tables unless the source is genuinely tabular.',
+            'list_from_lines' => 'Convert repeated short lines into ul/li lists only when it improves readability without changing meaning.',
+            'keep_line_breaks' => 'Preserve intentional line breaks for prices, part numbers, fitment notes, model codes, and caution notes. Do not merge them into long prose.',
+        ];
+
+        $instructions = [];
+        foreach ($instructionIds as $id) {
+            $id = trim((string)$id);
+            if (isset($catalog[$id]) && !in_array($catalog[$id], $instructions, true)) {
+                $instructions[] = $catalog[$id];
+            }
+        }
+        return $instructions;
     }
 
     /**

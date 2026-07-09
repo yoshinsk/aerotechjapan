@@ -101,7 +101,8 @@ if ($path === '/admin/ai-clean-html') {
 
     try {
         $translator = new OpenAITranslator($openaiConfigForCms());
-        $html = $translator->cleanHtml((string)($body['html'] ?? ''), trim((string)($body['context'] ?? '')));
+        $instructionIds = is_array($body['instructions'] ?? null) ? array_values($body['instructions']) : [];
+        $html = $translator->cleanHtml((string)($body['html'] ?? ''), trim((string)($body['context'] ?? '')), $instructionIds);
         json_response(['ok' => true, 'html' => sanitize_rich_html($html)]);
     } catch (Throwable $e) {
         json_response(['ok' => false, 'message' => $e->getMessage()], 400);

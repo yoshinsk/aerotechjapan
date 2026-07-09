@@ -259,6 +259,10 @@ function render_rich_text(string $value): string
 
 function sanitize_rich_html(string $html): string
 {
+    $html = preg_replace('/<\s*b(?:\s[^>]*)?>/i', '<strong>', $html) ?? $html;
+    $html = preg_replace('/<\s*\/\s*b\s*>/i', '</strong>', $html) ?? $html;
+    $html = preg_replace('/<\s*i(?:\s[^>]*)?>/i', '<em>', $html) ?? $html;
+    $html = preg_replace('/<\s*\/\s*i\s*>/i', '</em>', $html) ?? $html;
     $html = preg_replace('/<font\s+[^>]*color=["\']?([^"\'>\s]+)["\']?[^>]*>/i', '<span style="color: $1;">', $html) ?? $html;
     $html = str_ireplace('</font>', '</span>', $html);
     $allowed = '<h2><h3><p><br><strong><em><ul><ol><li><table><thead><tbody><tr><th><td><a><img><div><section><span>';
@@ -423,12 +427,18 @@ function sanitize_dom_element(DOMElement $element): void
 
 function sanitize_color_style(string $style): string
 {
-    if (!preg_match('/(?:^|;)\s*color\s*:\s*([^;]+)/i', $style, $matches)) {
-        return '';
+    $safe = [];
+    if (preg_match('/(?:^|;)\s*color\s*:\s*([^;]+)/i', $style, $matches)) {
+        $color = trim($matches[1]);
+        if (preg_match('/^#[0-9a-f]{3}([0-9a-f]{3})?$/i', $color) || preg_match('/^rgba?\(\s*[0-9]{1,3}\s*,\s*[0-9]{1,3}\s*,\s*[0-9]{1,3}(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)$/i', $color)) {
+            $safe[] = 'color: ' . $color . ';';
+        }
     }
-    $color = trim($matches[1]);
-    if (preg_match('/^#[0-9a-f]{3}([0-9a-f]{3})?$/i', $color) || preg_match('/^rgba?\(\s*[0-9]{1,3}\s*,\s*[0-9]{1,3}\s*,\s*[0-9]{1,3}(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)$/i', $color)) {
-        return 'color: ' . $color . ';';
+    if (preg_match('/(?:^|;)\s*font-weight\s*:\s*(bold|[6-9]00)\s*(?:;|$)/i', $style)) {
+        $safe[] = 'font-weight: 700;';
     }
-    return '';
+    if (preg_match('/(?:^|;)\s*font-style\s*:\s*italic\s*(?:;|$)/i', $style)) {
+        $safe[] = 'font-style: italic;';
+    }
+    return implode(' ', $safe);
 }
