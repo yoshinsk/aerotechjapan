@@ -1,0 +1,18 @@
+DirectoryIndex index.html
+AddDefaultCharset Shift_JIS
+Options -ExecCGI -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine Off
+</IfModule>
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+
+RemoveHandler .php .phtml .phar .cgi .pl
+RemoveType .php .phtml .phar .cgi .pl
+
+<FilesMatch "\.(php|phtml|phar|cgi|pl|py|sh|sql|ini|conf|local|env|log)$">
+    Require all denied
+</FilesMatch>

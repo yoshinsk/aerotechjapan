@@ -17,6 +17,7 @@
 | `httpdocs/database/` | MariaDBスキーマと初期データ投入スクリプト。 |
 | `httpdocs/config/` | 環境別設定。`config.local.php` はGit管理外。 |
 | `httpdocs/storage/` | メール送信失敗ログなどの書き込み領域。 |
+| `httpdocs/public/old_pages/` | 旧サイト閲覧用の静的コピー配置先。本体ファイルはGit管理外、`.htaccess` のみ管理。 |
 
 公開サイトのCSSは `httpdocs/public/assets/css/public.css` に分離し、Bootstrap 5 + 公開サイト専用テーマで構成する。
 管理画面は `httpdocs/public/assets/css/site.css` を利用する。
@@ -43,6 +44,23 @@
 - 公開ルート `httpdocs/public/` のCMS応答、DB、メール、Apache既定文字コードはUTF-8に統一。
 - 旧 `garage-file/*.html` と主要カテゴリHTMLから新URLへリダイレクト。
 - 旧画像はコピーせず、`public/media.php` が許可済み旧素材パスだけを安全に配信。
+- 旧サイトを確認できるように、本番では静的構成要素だけを `public/old_pages/` に配置し、`/old_pages/` で閲覧できる。`app`、`config`、`database`、`storage`、`public`、`prototype`、`cgi-bin`、PHP/CGI/ログ/SQL等は公開対象外。
+
+### 旧ページ公開用コピー
+
+`/var/www/vhosts/aero-tech.co.jp/httpdocs/` に残る旧サイトを直接公開せず、必要な静的構成要素だけを
+`/var/www/vhosts/aero-tech.co.jp/httpdocs/public/old_pages/` へコピーする。`/old_pages/` 配下は
+旧HTMLの文字コードに合わせて Shift_JIS を既定にし、CGI/PHP実行とディレクトリ一覧を無効化する。
+
+公開対象:
+
+- ルート直下の `*.html`、`*.htm`、`*.css`、画像、PDF、SWF、JS、`favicon.ico`
+- `aero-parts/`、`bbs/`、`dash-boad-table/`、`event/`、`g/`、`garage-file/`、`garage-img/`、`img/`、`news/`、`order/`、`parts/`、`side-table/`
+
+除外対象:
+
+- `app/`、`config/`、`database/`、`storage/`、`public/`、`prototype/`、`cgi-bin/`
+- `*.php`、`*.cgi`、`*.pl`、`*.log`、`*.sql`、設定ファイル、バックアップディレクトリ
 
 ### Git履歴に基づく主な修正内容
 

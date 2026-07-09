@@ -1,5 +1,7 @@
 output/
 httpdocs/public/uploads/*
 !httpdocs/public/uploads/.gitkeep
+httpdocs/public/old_pages/*
+!httpdocs/public/old_pages/.htaccess
 httpdocs/storage/logs/*
 !httpdocs/storage/logs/.gitkeep
