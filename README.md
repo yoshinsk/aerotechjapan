@@ -269,8 +269,10 @@ mysql -u root -p < httpdocs/prototype/schema.sql
    （`index.php` / `category.php` / `product.php` が共通レイアウトを共有。frameset 不使用）
 3. ~~**データ移行**: `garage-file/*.html` の SPEC・画像情報をスクリプトで抽出し、
    UTF-8 で JSON / SQL を生成。~~ ✅ 完了（全 128 商品、`tools/migrate.py`）
-4. **全商品をデータ駆動化（仕上げ）**: 抽出データの表記ゆれ補正、拡大画像（クリック時）
-   への対応、ダッシュ／サイドテーブル系の取り込み。
+4. ~~**全商品をデータ駆動化（CMS投入）**: 旧 `garage-file/*.html` 由来の商品128件を
+   MariaDBの `products` / `product_images` / `product_specs` へ投入。~~ ✅ 完了
+   残作業は抽出データの表記ゆれ補正、未分類39件の分類整理、ダッシュ／サイドテーブル系の
+   非商品コンテンツ取り込み。
 5. ~~**管理画面の拡充**: 認証強化（セッション＋ハッシュ化、HTTPS 必須）、
    画像アップロード、商品の追加・削除・並び替え。商品一覧のカテゴリ別タブ表示は実装済み。~~ ✅ 主要機能は実装済み
 6. ~~**UTF-8 完全移行**: 公開されるCMS応答、DB、メール、Apache既定文字コードをUTF-8へ統一。~~ ✅ 完了
