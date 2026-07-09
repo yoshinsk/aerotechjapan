@@ -442,6 +442,31 @@ final class CmsRepository
         return (int)$this->pdo->lastInsertId();
     }
 
+    public function deleteCategory(int $id): bool
+    {
+        if ($id <= 0) {
+            return false;
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $stmt = $this->pdo->prepare('UPDATE products SET category_id = NULL WHERE category_id = ?');
+            $stmt->execute([$id]);
+            $stmt = $this->pdo->prepare('UPDATE price_lists SET category_id = NULL WHERE category_id = ?');
+            $stmt->execute([$id]);
+            $stmt = $this->pdo->prepare('DELETE FROM categories WHERE id = ?');
+            $stmt->execute([$id]);
+            $deleted = $stmt->rowCount() > 0;
+            $this->pdo->commit();
+            return $deleted;
+        } catch (Throwable $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $e;
+        }
+    }
+
     public function priceLists(bool $activeOnly = true): array
     {
         $where = $activeOnly ? 'WHERE pl.is_active = 1' : '';

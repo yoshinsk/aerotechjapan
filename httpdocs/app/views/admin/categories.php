@@ -6,6 +6,7 @@
 ?>
 <h1>カテゴリ・ブランド管理</h1>
 <?php if ($saved): ?><div class="notice">保存しました。</div><?php endif; ?>
+<?php if (!empty($deleted)): ?><div class="notice">削除しました。</div><?php endif; ?>
 <?php if (!empty($error)): ?><div class="error-box"><?= e($error) ?></div><?php endif; ?>
 <section class="admin-panel">
     <form class="admin-form" method="post" enctype="multipart/form-data" action="<?= e(url('/admin/categories')) ?>">
@@ -52,7 +53,14 @@
             <td><?= e($category['name_ja']) ?></td>
             <td><?= e($category['slug']) ?></td>
             <td><?= e($category['sort_order']) ?></td>
-            <td><a href="<?= e(url('/admin/categories?id=' . $category['id'])) ?>">編集</a></td>
+            <td>
+                <a href="<?= e(url('/admin/categories?id=' . $category['id'])) ?>">編集</a>
+                <form method="post" action="<?= e(url('/admin/category-delete')) ?>" style="display:inline;" onsubmit="return confirm('このブランドを物理削除します。商品・価格表は未分類になり、ブランドロゴファイルは削除されます。よろしいですか？');">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="id" value="<?= e($category['id']) ?>">
+                    <button class="button secondary" type="submit">削除</button>
+                </form>
+            </td>
         </tr>
     <?php endforeach; ?>
     </tbody>

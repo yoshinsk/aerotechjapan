@@ -484,10 +484,24 @@ if ($path === '/admin/categories') {
         'categories' => $repo->categories(false),
         'edit' => $edit,
         'saved' => isset($_GET['saved']),
+        'deleted' => isset($_GET['deleted']),
         'error' => null,
         'title' => 'カテゴリ管理',
     ]);
     return;
+}
+
+if ($path === '/admin/category-delete') {
+    if (!is_post()) {
+        redirect_to('/admin/categories');
+    }
+
+    verify_csrf();
+    $category = $repo->categoryById((int)($_POST['id'] ?? 0));
+    if ($category && $repo->deleteCategory((int)$category['id'])) {
+        $imageService->deleteBrandLogoFiles((string)$category['logo_path']);
+    }
+    redirect_to('/admin/categories?deleted=1');
 }
 
 if ($path === '/admin/price-lists') {
