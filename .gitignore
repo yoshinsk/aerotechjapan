@@ -5,3 +5,5 @@ httpdocs/public/old_pages/*
 !httpdocs/public/old_pages/.htaccess
 httpdocs/storage/logs/*
 !httpdocs/storage/logs/.gitkeep
+httpdocs/storage/uploads/*
+!httpdocs/storage/uploads/.gitkeep

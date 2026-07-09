@@ -27,6 +27,10 @@ function base_path(): string
 {
     $script = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
     $dir = rtrim(str_replace('\\', '/', dirname($script)), '/');
+    if ($dir !== '' && preg_match('#^/plesk-site-preview/[^/]+/https?/[^/]+(?:/|$)#i', $dir) === 1) {
+        $dir = preg_replace('#^/plesk-site-preview/[^/]+/https?/[^/]+#i', '', $dir) ?? '';
+        $dir = rtrim($dir, '/');
+    }
     return $dir === '/' ? '' : $dir;
 }
 
@@ -248,6 +252,10 @@ function render_rich_text(string $value): string
     $trimmed = trim($value);
     if ($trimmed === '') {
         return '';
+    }
+    $decoded = html_entity_decode($trimmed, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    if ($decoded !== $trimmed && $decoded !== strip_tags($decoded)) {
+        $trimmed = $decoded;
     }
     $trimmed = preg_replace_callback('/\{\{media:([^}]+)\}\}/', fn($matches) => e(media_url(trim($matches[1]))), $trimmed) ?? $trimmed;
     $trimmed = preg_replace_callback('/\{\{url:([^}]+)\}\}/', fn($matches) => e(url(trim($matches[1]))), $trimmed) ?? $trimmed;

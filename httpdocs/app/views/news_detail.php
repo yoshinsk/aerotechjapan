@@ -12,5 +12,5 @@
     <?php elseif (!empty($post['image_path'])): ?>
         <p><a class="button secondary" href="<?= e(media_url($post['image_path'])) ?>" target="_blank" rel="noopener"><?= e(t('資料を開く', 'Open document')) ?></a></p>
     <?php endif; ?>
-    <div><?= nl2br(e(localized($post, 'body'))) ?></div>
+    <div class="rich-content"><?= render_rich_text(localized($post, 'body')) ?></div>
 </article>
