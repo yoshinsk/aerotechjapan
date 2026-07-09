@@ -354,18 +354,41 @@ if ($path === '/admin/product-edit') {
         $productId = $repo->saveProduct($payload);
 
         $specs = [];
-        foreach (preg_split('/\r\n|\r|\n/', (string)($_POST['specs_text'] ?? '')) as $line) {
-            $line = trim($line);
-            if ($line === '') {
-                continue;
+        if (isset($_POST['spec_label_ja']) || isset($_POST['spec_value_ja']) || isset($_POST['spec_label_en']) || isset($_POST['spec_value_en'])) {
+            $specLabelJa = is_array($_POST['spec_label_ja'] ?? null) ? array_values($_POST['spec_label_ja']) : [];
+            $specValueJa = is_array($_POST['spec_value_ja'] ?? null) ? array_values($_POST['spec_value_ja']) : [];
+            $specLabelEn = is_array($_POST['spec_label_en'] ?? null) ? array_values($_POST['spec_label_en']) : [];
+            $specValueEn = is_array($_POST['spec_value_en'] ?? null) ? array_values($_POST['spec_value_en']) : [];
+            $specCount = max(count($specLabelJa), count($specValueJa), count($specLabelEn), count($specValueEn));
+            for ($index = 0; $index < $specCount; $index++) {
+                $labelJa = trim((string)($specLabelJa[$index] ?? ''));
+                $valueJa = trim((string)($specValueJa[$index] ?? ''));
+                $labelEn = trim((string)($specLabelEn[$index] ?? ''));
+                $valueEn = trim((string)($specValueEn[$index] ?? ''));
+                if ($labelJa === '' && $valueJa === '' && $labelEn === '' && $valueEn === '') {
+                    continue;
+                }
+                $specs[] = [
+                    'label_ja' => $labelJa,
+                    'value_ja' => $valueJa,
+                    'label_en' => $labelEn !== '' ? $labelEn : $labelJa,
+                    'value_en' => $valueEn !== '' ? $valueEn : $valueJa,
+                ];
             }
-            $parts = array_map('trim', explode('|', $line, 4));
-            $specs[] = [
-                'label_ja' => $parts[0] ?? '',
-                'value_ja' => $parts[1] ?? '',
-                'label_en' => $parts[2] ?? ($parts[0] ?? ''),
-                'value_en' => $parts[3] ?? ($parts[1] ?? ''),
-            ];
+        } else {
+            foreach (preg_split('/\r\n|\r|\n/', (string)($_POST['specs_text'] ?? '')) as $line) {
+                $line = trim($line);
+                if ($line === '') {
+                    continue;
+                }
+                $parts = array_map('trim', explode('|', $line, 4));
+                $specs[] = [
+                    'label_ja' => $parts[0] ?? '',
+                    'value_ja' => $parts[1] ?? '',
+                    'label_en' => $parts[2] ?? ($parts[0] ?? ''),
+                    'value_en' => $parts[3] ?? ($parts[1] ?? ''),
+                ];
+            }
         }
         $repo->replaceSpecs($productId, $specs);
 
@@ -388,9 +411,10 @@ if ($path === '/admin/product-edit') {
         redirect_to('/admin/product-edit?id=' . $productId . '&saved=1');
     }
 
+    $productSpecs = $product ? $repo->productSpecs((int)$product['id']) : [];
     $specLines = [];
     if ($product) {
-        foreach ($repo->productSpecs((int)$product['id']) as $spec) {
+        foreach ($productSpecs as $spec) {
             $specLines[] = implode('|', [
                 $spec['label_ja'],
                 $spec['value_ja'],
@@ -403,6 +427,7 @@ if ($path === '/admin/product-edit') {
         'product' => $product,
         'categories' => $repo->categories(false),
         'images' => $product ? $repo->productImages((int)$product['id']) : [],
+        'specs' => $productSpecs,
         'specsText' => implode("\n", $specLines),
         'saved' => isset($_GET['saved']),
         'imageDeleted' => isset($_GET['image_deleted']),

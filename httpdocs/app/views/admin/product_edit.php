@@ -61,6 +61,105 @@
     ];
     require APP_ROOT . '/views/admin/partials/translation_helper.php';
     ?>
+    <?php
+    $specRows = $specs ?? [];
+    if (!$specRows) {
+        $specRows = [['label_ja' => '', 'value_ja' => '', 'label_en' => '', 'value_en' => '']];
+    }
+    $renderSpecEditorCell = static function (mixed $value): string {
+        $value = (string)$value;
+        if ($value === '') {
+            return '';
+        }
+        return $value !== strip_tags($value) ? sanitize_rich_html($value) : e($value);
+    };
+    ?>
+    <section class="admin-panel product-spec-editor" data-spec-editor data-spec-ai-endpoint="<?= e(url('/admin/ai-clean-html')) ?>" data-spec-ai-csrf="<?= e(csrf_token()) ?>">
+        <div class="spec-editor-head">
+            <div>
+                <h2>SPEC</h2>
+                <p class="admin-help">各セルを直接編集できます。文字色・太字・リンク・AI整形は、編集したいセルをクリックしてから使ってください。</p>
+            </div>
+            <button class="button secondary" type="button" data-spec-add-row>行を追加</button>
+        </div>
+        <div class="spec-editor-toolbar" data-spec-toolbar>
+            <button class="button secondary" type="button" data-spec-command="bold">B</button>
+            <button class="button secondary" type="button" data-spec-command="italic">I</button>
+            <button class="button secondary" type="button" data-spec-command="insertUnorderedList">箇条書き</button>
+            <button class="button secondary" type="button" data-spec-link>リンク</button>
+            <label class="rich-editor-color">文字色<input type="color" value="#e12d2d" data-spec-color></label>
+            <button class="button secondary" type="button" data-spec-apply-color>文字色を適用</button>
+            <button class="button secondary" type="button" data-spec-ai-clean>AIでセルHTML整形</button>
+            <span class="rich-editor-status" data-spec-status>セルをクリックして編集してください。</span>
+        </div>
+        <div class="spec-editor-table" data-spec-rows>
+            <div class="spec-editor-row spec-editor-row-head">
+                <span>日本語ラベル</span>
+                <span>日本語値</span>
+                <span>英語ラベル</span>
+                <span>英語値</span>
+                <span>操作</span>
+            </div>
+            <?php foreach ($specRows as $spec): ?>
+                <article class="spec-editor-row" data-spec-row>
+                    <div class="spec-editor-cell">
+                        <span class="spec-editor-cell-label">日本語ラベル</span>
+                        <textarea name="spec_label_ja[]" hidden data-spec-source><?= e($spec['label_ja'] ?? '') ?></textarea>
+                        <div class="spec-rich-field rich-content" contenteditable="true" role="textbox" aria-multiline="true" data-spec-field><?= $renderSpecEditorCell($spec['label_ja'] ?? '') ?></div>
+                    </div>
+                    <div class="spec-editor-cell">
+                        <span class="spec-editor-cell-label">日本語値</span>
+                        <textarea name="spec_value_ja[]" hidden data-spec-source><?= e($spec['value_ja'] ?? '') ?></textarea>
+                        <div class="spec-rich-field rich-content" contenteditable="true" role="textbox" aria-multiline="true" data-spec-field><?= $renderSpecEditorCell($spec['value_ja'] ?? '') ?></div>
+                    </div>
+                    <div class="spec-editor-cell">
+                        <span class="spec-editor-cell-label">英語ラベル</span>
+                        <textarea name="spec_label_en[]" hidden data-spec-source><?= e($spec['label_en'] ?? '') ?></textarea>
+                        <div class="spec-rich-field rich-content" contenteditable="true" role="textbox" aria-multiline="true" data-spec-field><?= $renderSpecEditorCell($spec['label_en'] ?? '') ?></div>
+                    </div>
+                    <div class="spec-editor-cell">
+                        <span class="spec-editor-cell-label">英語値</span>
+                        <textarea name="spec_value_en[]" hidden data-spec-source><?= e($spec['value_en'] ?? '') ?></textarea>
+                        <div class="spec-rich-field rich-content" contenteditable="true" role="textbox" aria-multiline="true" data-spec-field><?= $renderSpecEditorCell($spec['value_en'] ?? '') ?></div>
+                    </div>
+                    <div class="spec-editor-actions">
+                        <button class="button secondary" type="button" data-spec-move-up>上へ</button>
+                        <button class="button secondary" type="button" data-spec-move-down>下へ</button>
+                        <button class="button danger" type="button" data-spec-remove>削除</button>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+        <template data-spec-template>
+            <article class="spec-editor-row" data-spec-row>
+                <div class="spec-editor-cell">
+                    <span class="spec-editor-cell-label">日本語ラベル</span>
+                    <textarea name="spec_label_ja[]" hidden data-spec-source></textarea>
+                    <div class="spec-rich-field rich-content" contenteditable="true" role="textbox" aria-multiline="true" data-spec-field></div>
+                </div>
+                <div class="spec-editor-cell">
+                    <span class="spec-editor-cell-label">日本語値</span>
+                    <textarea name="spec_value_ja[]" hidden data-spec-source></textarea>
+                    <div class="spec-rich-field rich-content" contenteditable="true" role="textbox" aria-multiline="true" data-spec-field></div>
+                </div>
+                <div class="spec-editor-cell">
+                    <span class="spec-editor-cell-label">英語ラベル</span>
+                    <textarea name="spec_label_en[]" hidden data-spec-source></textarea>
+                    <div class="spec-rich-field rich-content" contenteditable="true" role="textbox" aria-multiline="true" data-spec-field></div>
+                </div>
+                <div class="spec-editor-cell">
+                    <span class="spec-editor-cell-label">英語値</span>
+                    <textarea name="spec_value_en[]" hidden data-spec-source></textarea>
+                    <div class="spec-rich-field rich-content" contenteditable="true" role="textbox" aria-multiline="true" data-spec-field></div>
+                </div>
+                <div class="spec-editor-actions">
+                    <button class="button secondary" type="button" data-spec-move-up>上へ</button>
+                    <button class="button secondary" type="button" data-spec-move-down>下へ</button>
+                    <button class="button danger" type="button" data-spec-remove>削除</button>
+                </div>
+            </article>
+        </template>
+    </section>
     <label>SPEC（1行: 日本語ラベル|日本語値|英語ラベル|英語値 / HTML可）
         <textarea name="specs_text" rows="12" data-html-fragment-helper data-fragment-ai-endpoint="<?= e(url('/admin/ai-clean-html')) ?>" data-fragment-ai-csrf="<?= e(csrf_token()) ?>"><?= e($specsText) ?></textarea>
     </label>

@@ -861,6 +861,132 @@ button.button {
   margin-top: 8px;
 }
 
+.legacy-spec-textarea,
+.admin-form label:has(textarea[name="specs_text"]) {
+  display: none;
+}
+
+.product-spec-editor {
+  gap: 14px;
+}
+
+.spec-editor-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.spec-editor-head h2 {
+  margin: 0 0 6px;
+}
+
+.spec-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.spec-editor-toolbar .rich-editor-status {
+  flex-basis: 100%;
+}
+
+.spec-editor-table {
+  display: grid;
+  gap: 10px;
+}
+
+.spec-editor-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(120px, .6fr) minmax(0, 1.4fr) minmax(120px, .6fr) auto;
+  gap: 8px;
+  align-items: stretch;
+  padding: 10px;
+  background: #101010;
+  border: 1px solid #2c2c2c;
+  border-radius: 8px;
+}
+
+.spec-editor-row-head {
+  padding-block: 8px;
+  color: #9aa6b2;
+  background: #171717;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.spec-editor-cell {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.spec-editor-cell-label {
+  display: none;
+  color: #9aa6b2;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.spec-rich-field {
+  min-height: 62px;
+  padding: 10px;
+  color: #f4f4f4;
+  background: #070707;
+  border: 1px solid #333;
+  border-radius: 8px;
+  outline: 0;
+  overflow-wrap: anywhere;
+}
+
+.spec-rich-field:focus,
+.spec-rich-field.is-active {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 .2rem rgba(77, 216, 255, .18);
+}
+
+.spec-rich-field p {
+  margin: 0 0 8px;
+}
+
+.spec-rich-field p:last-child {
+  margin-bottom: 0;
+}
+
+.spec-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-content: flex-start;
+  min-width: 132px;
+}
+
+.spec-editor-actions .button {
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 12px;
+}
+
+@media (max-width: 899px) {
+  .spec-editor-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .spec-editor-row-head {
+    display: none;
+  }
+
+  .spec-editor-cell-label {
+    display: inline;
+  }
+
+  .spec-editor-actions {
+    min-width: 0;
+  }
+}
+
 .price-list-ai-box {
   display: grid;
   gap: 8px;

@@ -553,6 +553,222 @@ document.querySelectorAll('textarea[data-html-fragment-helper]').forEach((textar
   textarea.insertAdjacentElement('afterend', helper);
 });
 
+document.querySelectorAll('[data-spec-editor]').forEach((editor) => {
+  if (editor.dataset.specEditorReady === '1') {
+    return;
+  }
+  editor.dataset.specEditorReady = '1';
+
+  document.querySelector('textarea[name="specs_text"]')?.closest('label')?.classList.add('legacy-spec-textarea');
+
+  const form = editor.closest('form');
+  const rowsContainer = editor.querySelector('[data-spec-rows]');
+  const template = editor.querySelector('template[data-spec-template]');
+  const endpoint = resolveAdminEndpoint(editor.getAttribute('data-spec-ai-endpoint') || '');
+  const csrf = editor.getAttribute('data-spec-ai-csrf') || '';
+  const status = editor.querySelector('[data-spec-status]');
+  const colorInput = editor.querySelector('[data-spec-color]');
+  let activeField = null;
+  let activeRange = null;
+
+  const setStatus = (message) => {
+    if (status) {
+      status.textContent = message;
+    }
+  };
+  const fieldHtmlValue = (field) => {
+    if (!field || field.textContent.trim() === '') {
+      return '';
+    }
+    return normalizeRichEditorHtml(field.innerHTML).trim();
+  };
+  const syncField = (field) => {
+    const source = field?.closest('.spec-editor-cell')?.querySelector('textarea[data-spec-source]');
+    if (source) {
+      source.value = fieldHtmlValue(field);
+    }
+  };
+  const syncAll = () => {
+    editor.querySelectorAll('[data-spec-field]').forEach(syncField);
+  };
+  const saveSelection = () => {
+    const selection = window.getSelection();
+    if (!activeField || !selection || selection.rangeCount === 0) {
+      return;
+    }
+    if (activeField.contains(selection.anchorNode) && activeField.contains(selection.focusNode)) {
+      activeRange = selection.getRangeAt(0).cloneRange();
+    }
+  };
+  const restoreSelection = () => {
+    if (!activeField) {
+      return false;
+    }
+    activeField.focus();
+    if (activeRange) {
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(activeRange);
+    }
+    return true;
+  };
+  const setActiveField = (field) => {
+    activeField = field;
+    editor.querySelectorAll('[data-spec-field].is-active').forEach((item) => item.classList.remove('is-active'));
+    field.classList.add('is-active');
+    setStatus('選択中のセルを編集できます。');
+    setTimeout(saveSelection, 0);
+  };
+  const runSpecCommand = (command, value = null) => {
+    if (!restoreSelection()) {
+      setStatus('編集するセルをクリックしてください。');
+      return;
+    }
+    document.execCommand(command, false, value);
+    syncField(activeField);
+    saveSelection();
+  };
+  const setFieldHtml = (field, html) => {
+    field.innerHTML = normalizeRichEditorHtml(html);
+    syncField(field);
+  };
+  const initRow = (row) => {
+    row.querySelectorAll('[data-spec-field]').forEach((field) => {
+      if (field.dataset.specFieldReady === '1') {
+        return;
+      }
+      field.dataset.specFieldReady = '1';
+      field.addEventListener('focus', () => setActiveField(field));
+      field.addEventListener('mouseup', saveSelection);
+      field.addEventListener('keyup', saveSelection);
+      field.addEventListener('input', () => {
+        syncField(field);
+        saveSelection();
+      });
+      syncField(field);
+    });
+  };
+  const rowItems = () => [...editor.querySelectorAll('[data-spec-row]')];
+  const addRow = () => {
+    if (!template || !rowsContainer) {
+      return;
+    }
+    const row = template.content.firstElementChild.cloneNode(true);
+    rowsContainer.append(row);
+    initRow(row);
+    row.querySelector('[data-spec-field]')?.focus();
+  };
+  const clearRow = (row) => {
+    row.querySelectorAll('[data-spec-field]').forEach((field) => setFieldHtml(field, ''));
+  };
+  const removeRow = (row) => {
+    const rows = rowItems();
+    if (rows.length <= 1) {
+      clearRow(row);
+      return;
+    }
+    row.remove();
+    activeField = null;
+    activeRange = null;
+    setStatus('SPEC行を削除しました。');
+  };
+
+  editor.querySelectorAll('[data-spec-row]').forEach(initRow);
+
+  editor.querySelector('[data-spec-add-row]')?.addEventListener('click', addRow);
+  editor.querySelector('[data-spec-toolbar]')?.addEventListener('mousedown', (event) => {
+    if (event.target instanceof HTMLButtonElement) {
+      event.preventDefault();
+    }
+  });
+  editor.querySelectorAll('[data-spec-command]').forEach((button) => {
+    button.addEventListener('click', () => runSpecCommand(button.getAttribute('data-spec-command') || ''));
+  });
+  editor.querySelector('[data-spec-apply-color]')?.addEventListener('click', () => {
+    runSpecCommand('foreColor', colorInput?.value || '#e12d2d');
+  });
+  editor.querySelector('[data-spec-link]')?.addEventListener('click', () => {
+    const href = window.prompt('リンクURLを入力してください。', 'https://');
+    if (href && href.trim() !== '' && href.trim() !== 'https://') {
+      runSpecCommand('createLink', href.trim());
+      activeField?.querySelectorAll('a').forEach((anchor) => {
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+      });
+      if (activeField) {
+        syncField(activeField);
+      }
+    }
+  });
+  editor.querySelector('[data-spec-ai-clean]')?.addEventListener('click', async (event) => {
+    const button = event.currentTarget;
+    if (!activeField) {
+      setStatus('AI整形するセルをクリックしてください。');
+      return;
+    }
+    syncField(activeField);
+    const html = fieldHtmlValue(activeField);
+    if (html === '') {
+      setStatus('整形するHTMLがありません。');
+      return;
+    }
+    if (!endpoint || !csrf) {
+      setStatus('AI整形の送信先が設定されていません。');
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = '整形中...';
+    setStatus('選択中のセルHTMLをAIで整えています。保存はまだ行われません。');
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrf,
+        },
+        body: JSON.stringify({
+          context: document.querySelector('h1')?.textContent.trim() || '',
+          html,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        throw new Error(result.message || 'HTML整形に失敗しました。');
+      }
+      setFieldHtml(activeField, String(result.html || '').trim());
+      setStatus('セルHTMLを整形しました。内容を確認して保存してください。');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'HTML整形に失敗しました。');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'AIでセルHTML整形';
+    }
+  });
+  editor.addEventListener('click', (event) => {
+    const row = event.target.closest?.('[data-spec-row]');
+    if (!row) {
+      return;
+    }
+    if (event.target.closest('[data-spec-remove]')) {
+      removeRow(row);
+    } else if (event.target.closest('[data-spec-move-up]')) {
+      const previous = row.previousElementSibling?.matches('[data-spec-row]') ? row.previousElementSibling : null;
+      if (previous) {
+        rowsContainer.insertBefore(row, previous);
+        setStatus('SPEC行を上へ移動しました。');
+      }
+    } else if (event.target.closest('[data-spec-move-down]')) {
+      const next = row.nextElementSibling?.matches('[data-spec-row]') ? row.nextElementSibling : null;
+      if (next) {
+        rowsContainer.insertBefore(next, row);
+        setStatus('SPEC行を下へ移動しました。');
+      }
+    }
+  });
+  form?.addEventListener('submit', syncAll);
+});
+
 const fileMatchesAccept = (file, accept) => {
   const rules = String(accept || '')
     .split(',')
