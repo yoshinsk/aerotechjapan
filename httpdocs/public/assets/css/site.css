@@ -1161,7 +1161,7 @@ button.calendar-day.is-active {
   flex-wrap: wrap;
   grid-column: 1 / -1;
   align-items: center;
-  gap: 10px;
+  gap: 8px 10px;
 }
 
 .calendar-event-ai .button {
@@ -1170,6 +1170,7 @@ button.calendar-day.is-active {
 }
 
 .calendar-event-ai span {
+  flex-basis: 100%;
   color: #b8c0c8;
   font-size: 12px;
 }

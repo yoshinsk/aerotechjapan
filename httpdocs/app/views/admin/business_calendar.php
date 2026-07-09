@@ -73,6 +73,7 @@ $next = (new DateTimeImmutable($current . '-01'))->modify('+1 month')->format('Y
                         </label>
                         <div class="calendar-event-ai">
                             <button class="button secondary" type="button" data-calendar-event-ai>AIで英訳</button>
+                            <button class="button danger" type="button" data-calendar-event-delete>イベントを削除</button>
                             <span data-calendar-event-ai-status>日本語イベント名を入力すると英語欄へ反映できます。</span>
                         </div>
                     </div>

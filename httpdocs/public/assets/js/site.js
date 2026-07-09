@@ -687,6 +687,26 @@ document.querySelectorAll('[data-calendar-editor]').forEach((editor) => {
     });
   });
 
+  editor.querySelectorAll('[data-calendar-event-delete]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const panel = button.closest('[data-calendar-event-panel]');
+      const date = panel?.getAttribute('data-calendar-event-panel') || '';
+      const status = panel?.querySelector('[data-calendar-event-ai-status]');
+      if (!panel || !date) {
+        return;
+      }
+
+      panel.querySelectorAll('[data-calendar-event-ja], [data-calendar-event-en], .calendar-event-url-field input').forEach((input) => {
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      updateEventBadge(date);
+      if (status) {
+        status.textContent = 'イベント情報を削除しました。保存すると反映されます。';
+      }
+    });
+  });
+
   editor.querySelectorAll('[data-calendar-date]').forEach((button) => {
     const date = button.getAttribute('data-calendar-date');
     if (date) {
