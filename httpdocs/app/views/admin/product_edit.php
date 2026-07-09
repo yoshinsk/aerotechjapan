@@ -11,6 +11,7 @@
 <?php if (!empty($restored)): ?><div class="notice">商品を下書きへ復元しました。</div><?php endif; ?>
 <?php $isDeleted = ($product['status'] ?? '') === 'deleted'; ?>
 <?php if ($isDeleted): ?><div class="error-box">この商品は削除済みです。公開サイトには表示されません。</div><?php endif; ?>
+<?php $richEditorAttrs = 'data-rich-editor data-rich-ai-endpoint="' . e(url('/admin/ai-clean-html')) . '" data-rich-ai-csrf="' . e(csrf_token()) . '"'; ?>
 <form class="admin-form" method="post" enctype="multipart/form-data" action="<?= e(url('/admin/product-edit')) ?>">
     <?= csrf_field() ?>
     <input type="hidden" name="id" value="<?= e($product['id'] ?? '') ?>">
@@ -40,16 +41,16 @@
         <input name="model_year_en" value="<?= e($product['model_year_en'] ?? '') ?>">
     </label>
     <label>概要（日本語）
-        <textarea name="summary_ja" rows="3"><?= e($product['summary_ja'] ?? '') ?></textarea>
+        <textarea name="summary_ja" rows="3" <?= $richEditorAttrs ?>><?= e($product['summary_ja'] ?? '') ?></textarea>
     </label>
     <label>Summary（英語）
-        <textarea name="summary_en" rows="3"><?= e($product['summary_en'] ?? '') ?></textarea>
+        <textarea name="summary_en" rows="3" <?= $richEditorAttrs ?>><?= e($product['summary_en'] ?? '') ?></textarea>
     </label>
     <label>補足（日本語）
-        <textarea name="notes_ja" rows="3"><?= e($product['notes_ja'] ?? '') ?></textarea>
+        <textarea name="notes_ja" rows="3" <?= $richEditorAttrs ?>><?= e($product['notes_ja'] ?? '') ?></textarea>
     </label>
     <label>Notes（英語）
-        <textarea name="notes_en" rows="3"><?= e($product['notes_en'] ?? '') ?></textarea>
+        <textarea name="notes_en" rows="3" <?= $richEditorAttrs ?>><?= e($product['notes_en'] ?? '') ?></textarea>
     </label>
     <?php
     $translationPairs = [
@@ -60,8 +61,8 @@
     ];
     require APP_ROOT . '/views/admin/partials/translation_helper.php';
     ?>
-    <label>SPEC（1行: 日本語ラベル|日本語値|英語ラベル|英語値）
-        <textarea name="specs_text" rows="12"><?= e($specsText) ?></textarea>
+    <label>SPEC（1行: 日本語ラベル|日本語値|英語ラベル|英語値 / HTML可）
+        <textarea name="specs_text" rows="12" data-html-fragment-helper data-fragment-ai-endpoint="<?= e(url('/admin/ai-clean-html')) ?>" data-fragment-ai-csrf="<?= e(csrf_token()) ?>"><?= e($specsText) ?></textarea>
     </label>
     <label>画像追加
         <input type="file" name="images[]" multiple accept="image/*">

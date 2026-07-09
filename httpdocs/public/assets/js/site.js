@@ -289,6 +289,270 @@ document.querySelectorAll('[data-translation-helper]').forEach((helper) => {
   buildDrafts();
 });
 
+const normalizeRichEditorHtml = (html) => String(html || '')
+  .replace(/<font\s+[^>]*color=["']?([^"'>\s]+)["']?[^>]*>/gi, '<span style="color: $1;">')
+  .replace(/<\/font>/gi, '</span>');
+
+document.querySelectorAll('textarea[data-rich-editor]').forEach((textarea) => {
+  if (textarea.dataset.richEditorReady === '1') {
+    return;
+  }
+  textarea.dataset.richEditorReady = '1';
+
+  const form = textarea.closest('form');
+  const endpoint = resolveAdminEndpoint(textarea.getAttribute('data-rich-ai-endpoint') || '');
+  const csrf = textarea.getAttribute('data-rich-ai-csrf') || '';
+  const wrapper = document.createElement('div');
+  const toolbar = document.createElement('div');
+  const visual = document.createElement('div');
+  const status = document.createElement('div');
+  let mode = 'visual';
+
+  wrapper.className = 'rich-editor';
+  toolbar.className = 'rich-editor-toolbar';
+  visual.className = 'rich-editor-visual rich-content';
+  visual.contentEditable = 'true';
+  visual.setAttribute('role', 'textbox');
+  visual.setAttribute('aria-multiline', 'true');
+  status.className = 'rich-editor-status';
+
+  const syncToTextarea = () => {
+    textarea.value = normalizeRichEditorHtml(visual.innerHTML).trim();
+  };
+  const setHtml = (html) => {
+    visual.innerHTML = normalizeRichEditorHtml(html);
+    syncToTextarea();
+  };
+  const setStatus = (message) => {
+    status.textContent = message;
+  };
+  const runCommand = (command, value = null) => {
+    visual.focus();
+    document.execCommand(command, false, value);
+    setHtml(visual.innerHTML);
+  };
+  const makeButton = (label, action, className = 'button secondary') => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = className;
+    button.textContent = label;
+    button.addEventListener('click', action);
+    return button;
+  };
+  const setMode = (nextMode) => {
+    if (nextMode === 'visual') {
+      visual.innerHTML = normalizeRichEditorHtml(textarea.value);
+      textarea.hidden = true;
+      visual.hidden = false;
+      mode = 'visual';
+      setStatus('WYSIWYG編集中です。');
+      return;
+    }
+    syncToTextarea();
+    textarea.hidden = false;
+    visual.hidden = true;
+    mode = 'html';
+    setStatus('HTMLソース編集中です。');
+  };
+
+  const visualButton = makeButton('WYSIWYG', () => setMode('visual'));
+  const htmlButton = makeButton('HTML', () => setMode('html'));
+  const boldButton = makeButton('B', () => runCommand('bold'));
+  const italicButton = makeButton('I', () => runCommand('italic'));
+  const ulButton = makeButton('箇条書き', () => runCommand('insertUnorderedList'));
+  const olButton = makeButton('番号リスト', () => runCommand('insertOrderedList'));
+  const linkButton = makeButton('リンク', () => {
+    const href = window.prompt('リンクURLを入力してください。', 'https://');
+    if (href && href.trim() !== '' && href.trim() !== 'https://') {
+      runCommand('createLink', href.trim());
+      visual.querySelectorAll('a').forEach((anchor) => {
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+      });
+      syncToTextarea();
+    }
+  });
+  const cleanButton = makeButton('AIでHTML整形', async () => {
+    if (mode === 'visual') {
+      syncToTextarea();
+    }
+    if (!endpoint || !csrf) {
+      setStatus('AI整形の送信先が設定されていません。');
+      return;
+    }
+    if (textarea.value.trim() === '') {
+      setStatus('整形するHTMLがありません。');
+      return;
+    }
+
+    cleanButton.disabled = true;
+    cleanButton.textContent = '整形中...';
+    setStatus('AIでHTML構文を整えています。保存はまだ行われません。');
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrf,
+        },
+        body: JSON.stringify({
+          context: document.querySelector('h1')?.textContent.trim() || '',
+          html: textarea.value,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        throw new Error(result.message || 'HTML整形に失敗しました。');
+      }
+      textarea.value = String(result.html || '').trim();
+      setMode('visual');
+      setStatus('HTMLを整形しました。内容を確認して保存してください。');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'HTML整形に失敗しました。');
+    } finally {
+      cleanButton.disabled = false;
+      cleanButton.textContent = 'AIでHTML整形';
+    }
+  });
+
+  const colorLabel = document.createElement('label');
+  colorLabel.className = 'rich-editor-color';
+  colorLabel.textContent = '文字色';
+  const colorInput = document.createElement('input');
+  colorInput.type = 'color';
+  colorInput.value = '#4dd8ff';
+  colorInput.addEventListener('input', () => runCommand('foreColor', colorInput.value));
+  colorLabel.append(colorInput);
+
+  toolbar.append(visualButton, htmlButton, boldButton, italicButton, ulButton, olButton, linkButton, colorLabel, cleanButton);
+  wrapper.append(toolbar, visual, status);
+  textarea.insertAdjacentElement('afterend', wrapper);
+
+  visual.addEventListener('input', syncToTextarea);
+  textarea.addEventListener('input', () => {
+    if (mode === 'visual') {
+      visual.innerHTML = normalizeRichEditorHtml(textarea.value);
+    }
+  });
+  form?.addEventListener('submit', () => {
+    if (mode === 'visual') {
+      syncToTextarea();
+    }
+  });
+  setMode('visual');
+});
+
+document.querySelectorAll('textarea[data-html-fragment-helper]').forEach((textarea) => {
+  if (textarea.dataset.htmlFragmentHelperReady === '1') {
+    return;
+  }
+  textarea.dataset.htmlFragmentHelperReady = '1';
+
+  const endpoint = resolveAdminEndpoint(textarea.getAttribute('data-fragment-ai-endpoint') || '');
+  const csrf = textarea.getAttribute('data-fragment-ai-csrf') || '';
+  const helper = document.createElement('div');
+  const toolbar = document.createElement('div');
+  const status = document.createElement('div');
+  const colorLabel = document.createElement('label');
+  const colorInput = document.createElement('input');
+
+  helper.className = 'html-fragment-helper';
+  toolbar.className = 'rich-editor-toolbar';
+  status.className = 'rich-editor-status';
+  colorLabel.className = 'rich-editor-color';
+  colorLabel.textContent = '文字色';
+  colorInput.type = 'color';
+  colorInput.value = '#e12d2d';
+  colorLabel.append(colorInput);
+
+  const setStatus = (message) => {
+    status.textContent = message;
+  };
+  const selectedText = () => textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+  const replaceSelection = (replacement) => {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    textarea.setRangeText(replacement, start, end, 'select');
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    textarea.focus();
+  };
+  const wrapSelection = (before, after) => {
+    const selected = selectedText();
+    if (!selected) {
+      setStatus('装飾する文字を選択してください。');
+      return;
+    }
+    if (selected.includes('|')) {
+      setStatus('区切り記号を含まない範囲を選択してください。');
+      return;
+    }
+    replaceSelection(`${before}${selected}${after}`);
+    setStatus('選択文字へHTMLタグを追加しました。');
+  };
+  const makeButton = (label, action) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'button secondary';
+    button.textContent = label;
+    button.addEventListener('click', action);
+    return button;
+  };
+
+  const colorButton = makeButton('選択文字色', () => {
+    wrapSelection(`<span style="color: ${colorInput.value};">`, '</span>');
+  });
+  const strongButton = makeButton('太字', () => {
+    wrapSelection('<strong>', '</strong>');
+  });
+  const cleanButton = makeButton('AIで選択HTML整形', async () => {
+    const selected = selectedText();
+    if (!selected) {
+      setStatus('整形するHTML断片を選択してください。');
+      return;
+    }
+    if (selected.includes('|')) {
+      setStatus('区切り記号を含まない範囲を選択してください。');
+      return;
+    }
+    if (!endpoint || !csrf) {
+      setStatus('AI整形の送信先が設定されていません。');
+      return;
+    }
+
+    cleanButton.disabled = true;
+    cleanButton.textContent = '整形中...';
+    setStatus('選択HTMLをAIで整えています。保存はまだ行われません。');
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrf,
+        },
+        body: JSON.stringify({
+          context: document.querySelector('h1')?.textContent.trim() || '',
+          html: selected,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        throw new Error(result.message || 'HTML整形に失敗しました。');
+      }
+      replaceSelection(String(result.html || '').trim());
+      setStatus('選択HTMLを整形しました。内容を確認して保存してください。');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'HTML整形に失敗しました。');
+    } finally {
+      cleanButton.disabled = false;
+      cleanButton.textContent = 'AIで選択HTML整形';
+    }
+  });
+
+  toolbar.append(colorLabel, colorButton, strongButton, cleanButton);
+  helper.append(toolbar, status);
+  textarea.insertAdjacentElement('afterend', helper);
+});
+
 const fileMatchesAccept = (file, accept) => {
   const rules = String(accept || '')
     .split(',')

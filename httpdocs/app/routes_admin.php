@@ -83,6 +83,30 @@ if ($path === '/admin/ai-translate') {
     }
 }
 
+if ($path === '/admin/ai-clean-html') {
+    if (!is_post()) {
+        json_response(['ok' => false, 'message' => 'POSTで送信してください。'], 405);
+    }
+
+    $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (!is_string($csrfToken) || !csrf_is_valid($csrfToken)) {
+        json_response(['ok' => false, 'message' => 'CSRF token mismatch.'], 419);
+    }
+
+    $body = json_decode(file_get_contents('php://input') ?: '', true);
+    if (!is_array($body)) {
+        json_response(['ok' => false, 'message' => 'JSONを解析できませんでした。'], 400);
+    }
+
+    try {
+        $translator = new OpenAITranslator($openaiConfigForCms());
+        $html = $translator->cleanHtml((string)($body['html'] ?? ''), trim((string)($body['context'] ?? '')));
+        json_response(['ok' => true, 'html' => sanitize_rich_html($html)]);
+    } catch (Throwable $e) {
+        json_response(['ok' => false, 'message' => $e->getMessage()], 400);
+    }
+}
+
 if ($path === '/admin/price-list-ai-assist') {
     if (!is_post()) {
         json_response(['ok' => false, 'message' => 'POSTで送信してください。'], 405);

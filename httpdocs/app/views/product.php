@@ -6,7 +6,7 @@
 $mainImage = $images[0] ?? [];
 ?>
 <section class="section product-layout container-fluid row g-4">
-    <div class="col-12 col-lg-7">
+    <div class="col-12 col-lg-6 product-media">
         <img class="gallery-main" data-gallery-main src="<?= e(image_variant_url($mainImage, 'large')) ?>" alt="<?= e(localized($product, 'name')) ?>">
         <?php if ($images): ?>
             <div class="gallery-thumbs row row-cols-4 row-cols-md-6 g-2">
@@ -21,14 +21,14 @@ $mainImage = $images[0] ?? [];
         <?php endif; ?>
     </div>
 
-    <div class="col-12 col-lg-5">
+    <div class="col-12 col-lg-6 product-detail">
         <p class="eyebrow"><?= e($product['category_name_' . current_locale()] ?? $product['category_name_ja'] ?? '') ?></p>
         <h1><?= e(localized($product, 'name')) ?></h1>
         <?php if (localized($product, 'model_year') !== ''): ?>
             <p class="muted"><?= e(localized($product, 'model_year')) ?></p>
         <?php endif; ?>
         <?php if (localized($product, 'summary') !== ''): ?>
-            <p><?= nl2br(e(localized($product, 'summary'))) ?></p>
+            <div class="product-summary rich-content"><?= render_rich_text(localized($product, 'summary')) ?></div>
         <?php endif; ?>
         <div class="actions">
             <a class="button" href="<?= e(url('/contact?product_id=' . $product['id'])) ?>"><?= e(t('この商品について問い合わせる', 'Ask about this product')) ?></a>
@@ -36,20 +36,26 @@ $mainImage = $images[0] ?? [];
         </div>
 
         <?php if ($specs): ?>
-            <table class="spec-table table table-dark table-hover">
-                <tbody>
-                <?php foreach ($specs as $spec): ?>
-                    <tr>
-                        <th><?= e(localized($spec, 'label')) ?></th>
-                        <td><?= nl2br(e(localized($spec, 'value'))) ?></td>
-                    </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
+            <div class="spec-table-wrap">
+                <table class="spec-table table table-dark table-hover">
+                    <colgroup>
+                        <col class="spec-label-col">
+                        <col class="spec-value-col">
+                    </colgroup>
+                    <tbody>
+                    <?php foreach ($specs as $spec): ?>
+                        <tr>
+                            <th><div class="spec-cell-rich"><?= render_rich_text(localized($spec, 'label')) ?></div></th>
+                            <td><div class="spec-cell-rich"><?= render_rich_text(localized($spec, 'value')) ?></div></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         <?php endif; ?>
 
         <?php if (localized($product, 'notes') !== ''): ?>
-            <p class="muted"><?= nl2br(e(localized($product, 'notes'))) ?></p>
+            <div class="product-notes muted rich-content"><?= render_rich_text(localized($product, 'notes')) ?></div>
         <?php endif; ?>
     </div>
 </section>

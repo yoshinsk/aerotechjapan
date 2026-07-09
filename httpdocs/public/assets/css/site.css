@@ -787,6 +787,80 @@ button.button {
   font-weight: 500;
 }
 
+.rich-editor {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.rich-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.rich-editor-toolbar .button {
+  min-height: 36px;
+  padding: 7px 10px;
+}
+
+.rich-editor-color {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  margin: 0;
+  padding: 6px 10px;
+  color: #d9e2ea;
+  background: #101820;
+  border: 1px solid #2f4657;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.rich-editor-color input {
+  width: 28px;
+  height: 24px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rich-editor-visual {
+  min-height: 170px;
+  padding: 12px;
+  color: #f4f4f4;
+  background: #0d0d0d;
+  border: 1px solid #333;
+  border-radius: 8px;
+  outline: 0;
+}
+
+.rich-editor-visual:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 .2rem rgba(77, 216, 255, .18);
+}
+
+.rich-editor-visual p {
+  margin: 0 0 10px;
+}
+
+.rich-editor-visual a {
+  color: var(--cyan);
+}
+
+.rich-editor-status {
+  color: #b8c0c8;
+  font-size: 12px;
+}
+
+.html-fragment-helper {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 .price-list-ai-box {
   display: grid;
   gap: 8px;

@@ -243,7 +243,183 @@ function render_rich_text(string $value): string
     $trimmed = preg_replace_callback('/\{\{media:([^}]+)\}\}/', fn($matches) => e(media_url(trim($matches[1]))), $trimmed) ?? $trimmed;
     $trimmed = preg_replace_callback('/\{\{url:([^}]+)\}\}/', fn($matches) => e(url(trim($matches[1]))), $trimmed) ?? $trimmed;
     if ($trimmed !== strip_tags($trimmed)) {
-        return strip_tags($trimmed, '<h2><h3><p><br><strong><em><ul><ol><li><table><thead><tbody><tr><th><td><a><img><div><section><span>');
+        return sanitize_rich_html($trimmed);
     }
     return nl2br(e($trimmed));
+}
+
+function sanitize_rich_html(string $html): string
+{
+    $html = preg_replace('/<font\s+[^>]*color=["\']?([^"\'>\s]+)["\']?[^>]*>/i', '<span style="color: $1;">', $html) ?? $html;
+    $html = str_ireplace('</font>', '</span>', $html);
+    $allowed = '<h2><h3><p><br><strong><em><ul><ol><li><table><thead><tbody><tr><th><td><a><img><div><section><span>';
+    if (!class_exists('DOMDocument')) {
+        return sanitize_rich_html_fallback($html, $allowed);
+    }
+
+    $document = new DOMDocument('1.0', 'UTF-8');
+    $options = 0;
+    if (defined('LIBXML_HTML_NOIMPLIED')) {
+        $options |= LIBXML_HTML_NOIMPLIED;
+    }
+    if (defined('LIBXML_HTML_NODEFDTD')) {
+        $options |= LIBXML_HTML_NODEFDTD;
+    }
+    $previous = libxml_use_internal_errors(true);
+    $document->loadHTML('<?xml encoding="UTF-8"><div id="rich-root">' . $html . '</div>', $options);
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
+
+    $root = $document->getElementById('rich-root');
+    if (!$root) {
+        return strip_tags($html, $allowed);
+    }
+    sanitize_dom_children($root);
+
+    $result = '';
+    foreach ($root->childNodes as $child) {
+        $result .= $document->saveHTML($child);
+    }
+    return trim($result);
+}
+
+function sanitize_rich_html_fallback(string $html, string $allowed): string
+{
+    $html = preg_replace('#<\s*(script|style|iframe|form|object|embed)\b[^>]*>.*?<\s*/\s*\1\s*>#is', '', $html) ?? $html;
+    $html = preg_replace('/<!--.*?-->/s', '', $html) ?? $html;
+    $html = strip_tags($html, $allowed);
+    $allowedTags = [
+        'h2', 'h3', 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li',
+        'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'img', 'div', 'section', 'span',
+    ];
+
+    return trim(preg_replace_callback('/<\s*(\/?)([a-z0-9]+)([^>]*)>/i', function (array $matches) use ($allowedTags): string {
+        $closing = $matches[1] === '/';
+        $tag = strtolower($matches[2]);
+        if (!in_array($tag, $allowedTags, true)) {
+            return '';
+        }
+        if ($closing) {
+            return in_array($tag, ['br', 'img'], true) ? '' : '</' . $tag . '>';
+        }
+        if ($tag === 'br') {
+            return '<br>';
+        }
+
+        $attrs = sanitize_rich_html_fallback_attrs($tag, $matches[3] ?? '');
+        $htmlAttrs = '';
+        foreach ($attrs as $name => $value) {
+            $htmlAttrs .= ' ' . $name . '="' . e($value) . '"';
+        }
+        return '<' . $tag . $htmlAttrs . '>';
+    }, $html) ?? $html);
+}
+
+function sanitize_rich_html_fallback_attrs(string $tag, string $attrsText): array
+{
+    $attrs = [];
+    preg_match_all('/([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*("([^"]*)"|\'([^\']*)\'|([^\s"\'>`]+))/', $attrsText, $matches, PREG_SET_ORDER);
+    foreach ($matches as $match) {
+        $name = strtolower($match[1]);
+        $value = trim((string)($match[3] ?? $match[4] ?? $match[5] ?? ''));
+        if ($name === 'style' && in_array($tag, ['span', 'p', 'div', 'section', 'th', 'td'], true)) {
+            $style = sanitize_color_style($value);
+            if ($style !== '') {
+                $attrs['style'] = $style;
+            }
+        } elseif ($tag === 'a' && $name === 'href' && preg_match('#^(https?://|mailto:|tel:|/)#i', $value) === 1) {
+            $attrs['href'] = $value;
+        } elseif ($tag === 'a' && $name === 'target' && $value === '_blank') {
+            $attrs['target'] = '_blank';
+        } elseif ($tag === 'a' && $name === 'rel') {
+            $attrs['rel'] = 'noopener noreferrer';
+        } elseif ($tag === 'img' && $name === 'alt') {
+            $attrs['alt'] = $value;
+        } elseif ($tag === 'img' && $name === 'src' && preg_match('#^(https?://|/)#i', $value) === 1) {
+            $attrs['src'] = $value;
+        } elseif (in_array($tag, ['th', 'td'], true) && in_array($name, ['colspan', 'rowspan'], true) && preg_match('/^[1-9][0-9]?$/', $value) === 1) {
+            $attrs[$name] = $value;
+        }
+    }
+    if ($tag === 'a' && ($attrs['target'] ?? '') === '_blank') {
+        $attrs['rel'] = 'noopener noreferrer';
+    }
+    return $attrs;
+}
+
+function sanitize_dom_children(DOMNode $node): void
+{
+    foreach (iterator_to_array($node->childNodes) as $child) {
+        if (!$child instanceof DOMElement) {
+            continue;
+        }
+        sanitize_dom_children($child);
+        sanitize_dom_element($child);
+    }
+}
+
+function sanitize_dom_element(DOMElement $element): void
+{
+    $allowedTags = [
+        'h2', 'h3', 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li',
+        'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'img', 'div', 'section', 'span',
+    ];
+    $tag = strtolower($element->tagName);
+    if (in_array($tag, ['script', 'style', 'iframe', 'form', 'object', 'embed'], true)) {
+        $element->parentNode?->removeChild($element);
+        return;
+    }
+    if (!in_array($tag, $allowedTags, true)) {
+        $parent = $element->parentNode;
+        if (!$parent) {
+            return;
+        }
+        while ($element->firstChild) {
+            $parent->insertBefore($element->firstChild, $element);
+        }
+        $parent->removeChild($element);
+        return;
+    }
+
+    foreach (iterator_to_array($element->attributes) as $attribute) {
+        $name = strtolower($attribute->name);
+        $value = trim($attribute->value);
+        $keep = false;
+        if ($name === 'style' && in_array($tag, ['span', 'p', 'div', 'section', 'th', 'td'], true)) {
+            $style = sanitize_color_style($value);
+            if ($style !== '') {
+                $element->setAttribute('style', $style);
+                $keep = true;
+            }
+        } elseif ($tag === 'a' && $name === 'href') {
+            $keep = preg_match('#^(https?://|mailto:|tel:|/)#i', $value) === 1;
+        } elseif ($tag === 'a' && $name === 'target') {
+            $keep = $value === '_blank';
+        } elseif ($tag === 'a' && $name === 'rel') {
+            $element->setAttribute('rel', 'noopener noreferrer');
+            $keep = true;
+        } elseif ($tag === 'img' && in_array($name, ['src', 'alt'], true)) {
+            $keep = $name === 'alt' || preg_match('#^(https?://|/)#i', $value) === 1;
+        } elseif (in_array($tag, ['th', 'td'], true) && in_array($name, ['colspan', 'rowspan'], true)) {
+            $keep = preg_match('/^[1-9][0-9]?$/', $value) === 1;
+        }
+        if (!$keep) {
+            $element->removeAttribute($attribute->name);
+        }
+    }
+    if ($tag === 'a' && $element->getAttribute('target') === '_blank') {
+        $element->setAttribute('rel', 'noopener noreferrer');
+    }
+}
+
+function sanitize_color_style(string $style): string
+{
+    if (!preg_match('/(?:^|;)\s*color\s*:\s*([^;]+)/i', $style, $matches)) {
+        return '';
+    }
+    $color = trim($matches[1]);
+    if (preg_match('/^#[0-9a-f]{3}([0-9a-f]{3})?$/i', $color) || preg_match('/^rgba?\(\s*[0-9]{1,3}\s*,\s*[0-9]{1,3}\s*,\s*[0-9]{1,3}(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)$/i', $color)) {
+        return 'color: ' . $color . ';';
+    }
+    return '';
 }

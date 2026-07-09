@@ -215,6 +215,65 @@ final class OpenAITranslator
         }
     }
 
+    public function cleanHtml(string $html, string $context = ''): string
+    {
+        $apiKey = trim((string)($this->config['api_key'] ?? ''));
+        if ($apiKey === '') {
+            throw new RuntimeException('OpenAI APIキーが未設定です。管理画面の「設定」から登録してください。');
+        }
+
+        $html = mb_substr(trim($html), 0, 12000);
+        if ($html === '') {
+            throw new InvalidArgumentException('整形するHTMLがありません。');
+        }
+
+        $schema = [
+            'type' => 'object',
+            'additionalProperties' => false,
+            'properties' => [
+                'html' => [
+                    'type' => 'string',
+                    'description' => 'Clean safe HTML fragment.',
+                ],
+            ],
+            'required' => ['html'],
+        ];
+
+        $payload = [
+            'model' => $this->config['model'] ?? 'gpt-5.4-mini',
+            'reasoning' => ['effort' => $this->config['reasoning_effort'] ?? 'low'],
+            'instructions' => implode("\n", [
+                'You repair and tidy CMS HTML fragments for an automotive website.',
+                'Preserve the original text, language, meaning, brand names, product names, measurements, and URLs.',
+                'Do not add new facts, marketing claims, sections, links, or images.',
+                'Use only these tags: h2, h3, p, br, strong, em, ul, ol, li, table, thead, tbody, tr, th, td, a, img, div, section, span.',
+                'For text color, use span style="color: #RRGGBB;" only. Do not use font tags or other inline CSS.',
+                'Remove scripts, event handlers, iframes, forms, style tags, and unsafe attributes.',
+                'Return a valid HTML fragment, not a full HTML document.',
+            ]),
+            'input' => json_encode([
+                'context' => mb_substr($context, 0, 200),
+                'html' => $html,
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'text' => [
+                'format' => [
+                    'type' => 'json_schema',
+                    'name' => 'cms_html_cleanup',
+                    'strict' => true,
+                    'schema' => $schema,
+                ],
+            ],
+        ];
+
+        $response = $this->request($payload, $apiKey);
+        $text = $this->extractText($response);
+        $decoded = json_decode($text, true);
+        if (!is_array($decoded)) {
+            throw new RuntimeException('OpenAI APIの応答をJSONとして解析できませんでした。');
+        }
+        return trim((string)($decoded['html'] ?? ''));
+    }
+
     /**
      * 入力欄ごとの翻訳対象を検証し、過大な文字列を切り詰めます。
      *
