@@ -446,14 +446,25 @@ if ($path === '/admin/categories') {
         $categoryId = (int)($_POST['id'] ?? 0);
         $currentCategory = $categoryId > 0 ? $repo->categoryById($categoryId) : null;
         $logoPath = trim((string)($currentCategory['logo_path'] ?? ''));
-        if (!empty($_FILES['logo']['name'])) {
-            $uploadedLogo = $fileService->storeImageOriginal($_FILES['logo'], 'brands');
-            if ($uploadedLogo) {
-                if ($logoPath !== '') {
-                    $imageService->deletePublicUpload($logoPath);
+        try {
+            if (!empty($_FILES['logo']['name'])) {
+                $uploadedLogo = $fileService->storeBrandLogo($_FILES['logo'], 'brands');
+                if ($uploadedLogo) {
+                    if ($logoPath !== '') {
+                        $imageService->deleteBrandLogoFiles($logoPath);
+                    }
+                    $logoPath = $uploadedLogo;
                 }
-                $logoPath = $uploadedLogo;
             }
+        } catch (Throwable $e) {
+            admin_render('categories', [
+                'categories' => $repo->categories(false),
+                'edit' => $currentCategory,
+                'saved' => false,
+                'error' => $e->getMessage(),
+                'title' => 'カテゴリ管理',
+            ]);
+            return;
         }
         $repo->saveCategory([
             'id' => $categoryId ?: null,
@@ -473,6 +484,7 @@ if ($path === '/admin/categories') {
         'categories' => $repo->categories(false),
         'edit' => $edit,
         'saved' => isset($_GET['saved']),
+        'error' => null,
         'title' => 'カテゴリ管理',
     ]);
     return;

@@ -145,6 +145,23 @@ final class ImageService
         @unlink($realFile);
     }
 
+    public function deleteBrandLogoFiles(string $path): void
+    {
+        $path = trim(ltrim(str_replace('\\', '/', $path), '/'));
+        $this->deletePublicUpload($path);
+        if (!preg_match('#^uploads/brands/\d{4}/\d{2}/.+-logo\.png$#', $path)) {
+            return;
+        }
+
+        $sourcePath = HTTPDOCS_ROOT . '/storage/' . preg_replace('/-logo\.png$/', '-original.ai', $path);
+        $storageRoot = realpath(HTTPDOCS_ROOT . '/storage/uploads');
+        $sourceRealPath = is_file($sourcePath) ? realpath($sourcePath) : false;
+        if (!$storageRoot || !$sourceRealPath || !str_starts_with($sourceRealPath, $storageRoot . DIRECTORY_SEPARATOR)) {
+            return;
+        }
+        @unlink($sourceRealPath);
+    }
+
     private function deleteManagedProductImage(string $path): void
     {
         $path = trim(ltrim(str_replace('\\', '/', $path), '/'));

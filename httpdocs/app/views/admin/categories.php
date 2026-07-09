@@ -6,6 +6,7 @@
 ?>
 <h1>カテゴリ・ブランド管理</h1>
 <?php if ($saved): ?><div class="notice">保存しました。</div><?php endif; ?>
+<?php if (!empty($error)): ?><div class="error-box"><?= e($error) ?></div><?php endif; ?>
 <section class="admin-panel">
     <form class="admin-form" method="post" enctype="multipart/form-data" action="<?= e(url('/admin/categories')) ?>">
         <?= csrf_field() ?>
@@ -22,7 +23,8 @@
             </div>
         <?php endif; ?>
         <label>ブランドロゴ
-            <input type="file" name="logo" accept="image/*">
+            <input type="file" name="logo" accept="image/*,.ai,application/pdf,application/postscript">
+            <small>JPEG / PNG / GIF / WebP / PDF互換AIに対応しています。AIはPNGへ自動変換します。</small>
         </label>
         <?php
         $translationPairs = [
