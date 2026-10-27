@@ -846,4 +846,29 @@ final class CmsRepository
              ORDER BY i.created_at DESC LIMIT 200'
         )->fetchAll();
     }
+
+    /**
+     * 問い合わせ詳細を1件取得します。管理画面の詳細表示と削除前の対象確認に使います。
+     */
+    public function inquiryById(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT i.*, p.name_ja AS product_name
+             FROM inquiries i LEFT JOIN products p ON p.id = i.product_id
+             WHERE i.id = ? LIMIT 1'
+        );
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    /**
+     * 不要と判断した問い合わせ履歴を1件だけ完全削除します。
+     */
+    public function deleteInquiry(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM inquiries WHERE id = ?');
+        $stmt->execute([$id]);
+        return $stmt->rowCount() > 0;
+    }
 }

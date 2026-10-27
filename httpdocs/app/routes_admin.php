@@ -791,9 +791,32 @@ if ($path === '/admin/page-edit') {
     return;
 }
 
+if ($path === '/admin/inquiry-delete') {
+    if (is_post()) {
+        verify_csrf();
+        $repo->deleteInquiry((int)($_POST['id'] ?? 0));
+    }
+    redirect_to('/admin/inquiries?deleted=1');
+}
+
+if ($path === '/admin/inquiry') {
+    $inquiry = $repo->inquiryById((int)($_GET['id'] ?? 0));
+    if (!$inquiry) {
+        http_response_code(404);
+        admin_render('error', ['message' => '問い合わせが見つかりません。']);
+        return;
+    }
+    admin_render('inquiry_detail', [
+        'inquiry' => $inquiry,
+        'title' => '問い合わせ詳細',
+    ]);
+    return;
+}
+
 if ($path === '/admin/inquiries') {
     admin_render('inquiries', [
         'inquiries' => $repo->inquiries(),
+        'deleted' => isset($_GET['deleted']),
         'title' => '問い合わせ',
     ]);
     return;

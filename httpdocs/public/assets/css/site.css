@@ -652,6 +652,124 @@ button.button {
   margin: 0;
 }
 
+/* 問い合わせ一覧では本文を要約し、連絡先と操作を固定の位置に分けて表示します。 */
+.inquiry-list {
+  display: grid;
+  gap: 12px;
+}
+
+.inquiry-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, .7fr) auto;
+  gap: 18px;
+  align-items: start;
+  padding: 20px;
+  border: 1px solid #282828;
+  border-radius: var(--radius);
+  background: #121212;
+}
+
+.inquiry-card-head {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #b8c0c8;
+  font-size: 13px;
+}
+
+.inquiry-card-main h2,
+.inquiry-message-full h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.inquiry-company,
+.inquiry-product,
+.inquiry-message {
+  margin: 6px 0 0;
+}
+
+.inquiry-company,
+.inquiry-product {
+  color: #b8c0c8;
+}
+
+.inquiry-message {
+  white-space: pre-line;
+}
+
+.inquiry-contact,
+.inquiry-detail-grid {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.inquiry-contact div,
+.inquiry-detail-grid div {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.inquiry-contact dt,
+.inquiry-detail-grid dt {
+  color: #b8c0c8;
+  font-size: 13px;
+}
+
+.inquiry-contact dd,
+.inquiry-detail-grid dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.inquiry-actions {
+  justify-content: flex-end;
+}
+
+.inquiry-detail {
+  display: grid;
+  gap: 24px;
+}
+
+.inquiry-message-full {
+  display: grid;
+  gap: 12px;
+}
+
+.inquiry-message-full > div {
+  padding: 16px;
+  white-space: pre-wrap;
+  border: 1px solid #282828;
+  border-radius: var(--radius);
+  background: #0d0d0d;
+}
+
+.inquiry-technical-details {
+  color: #b8c0c8;
+}
+
+.inquiry-technical-details summary {
+  cursor: pointer;
+}
+
+.inquiry-technical-details .inquiry-detail-grid {
+  margin-top: 14px;
+}
+
+@media (max-width: 900px) {
+  .inquiry-card {
+    grid-template-columns: 1fr;
+  }
+
+  .inquiry-actions {
+    justify-content: flex-start;
+  }
+}
+
 .admin-form {
   display: grid;
   gap: 14px;
