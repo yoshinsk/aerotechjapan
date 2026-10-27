@@ -10,7 +10,7 @@ $addLabel = $isSiteMap ? 'サイトマップ項目を追加' : '販売代理店�
 <h1><?= e($title) ?></h1>
 <div class="admin-actions"><a class="button" href="<?= e(url('/admin/' . $base . '-edit')) ?>"><?= e($addLabel) ?></a></div>
 <table class="admin-table">
-    <thead><tr><th><?= $isSiteMap ? 'メーカー' : '区分' ?></th><th><?= $isSiteMap ? '車種・型式' : '会社名' ?></th><?php if ($isSiteMap): ?><th>ブランド</th><th>商品slug</th><?php endif; ?><th>並び順</th><th>状態</th><th></th></tr></thead>
+    <thead><tr><th><?= $isSiteMap ? 'メーカー' : '区分' ?></th><th><?= $isSiteMap ? '車種・型式' : '会社名' ?></th><?php if ($isSiteMap): ?><th>ブランド</th><th>商品slug</th><?php endif; ?><th>並び順</th><th>状態</th><th>操作</th></tr></thead>
     <tbody>
     <?php foreach ($entries as $entry): ?>
         <tr>
@@ -18,9 +18,9 @@ $addLabel = $isSiteMap ? 'サイトマップ項目を追加' : '販売代理店�
             <?php if ($isSiteMap): ?><td><?= e($entry['detail']) ?></td><td><?= e($entry['product_slug']) ?></td><?php endif; ?>
             <td><?= e($entry['sort_order']) ?></td><td><?= $entry['is_active'] ? '公開' : '非公開' ?></td>
             <td class="admin-row-actions">
-                <a href="<?= e(url('/admin/' . $base . '-edit?id=' . $entry['id'])) ?>">編集</a>
+                <a class="btn btn-sm btn-outline-info" href="<?= e(url('/admin/' . $base . '-edit?id=' . $entry['id'])) ?>">編集</a>
                 <form method="post" action="<?= e(url('/admin/' . $base . '-delete')) ?>" onsubmit="return confirm('この項目を削除しますか？');">
-                    <?= csrf_field() ?><input type="hidden" name="id" value="<?= e($entry['id']) ?>"><button type="submit" class="button danger">削除</button>
+                    <?= csrf_field() ?><input type="hidden" name="id" value="<?= e($entry['id']) ?>"><button type="submit" class="btn btn-sm btn-outline-danger">削除</button>
                 </form>
             </td>
         </tr>

@@ -640,6 +640,18 @@ button.button {
   background: #0b0b0b;
 }
 
+/* 一覧画面の行ごとの編集・削除操作を明確に表示します。 */
+.admin-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 138px;
+}
+
+.admin-row-actions form {
+  margin: 0;
+}
+
 .admin-form {
   display: grid;
   gap: 14px;
