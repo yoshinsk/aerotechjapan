@@ -12,7 +12,7 @@ $pageTitle = ($title ?? 'CMS') . ' | AERO TECH CMS';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($pageTitle) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= e(asset_url('css/site.css')) ?>?v=20261027-directory-edit">
+    <link rel="stylesheet" href="<?= e(asset_url('css/site.css')) ?>?v=20261027-product-site-map">
 </head>
 <body class="admin-body <?= ($path ?? '') === '/admin/login' ? 'admin-login-body' : '' ?>">
 <?php if (($path ?? '') !== '/admin/login'): ?>
@@ -44,6 +44,6 @@ $pageTitle = ($title ?? 'CMS') . ' | AERO TECH CMS';
     <?= $content ?>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= e(asset_url('js/site.js')) ?>?v=20260709-html-ai"></script>
+<script src="<?= e(asset_url('js/site.js')) ?>?v=20261027-product-site-map"></script>
 </body>
 </html>

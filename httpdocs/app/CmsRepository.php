@@ -77,16 +77,34 @@ final class CmsRepository
     }
 
     /**
+     * 商品slugに紐付くサイトマップ項目を取得します。
+     * 商品編集画面で既存の掲載内容を維持して再編集するために使います。
+     */
+    public function siteMapEntryByProductSlug(string $productSlug): ?array
+    {
+        $this->ensureSiteDirectoryStorage();
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM site_directory_entries
+             WHERE directory_type = "sitemap" AND product_slug = ?
+             ORDER BY id LIMIT 1'
+        );
+        $stmt->execute([$productSlug]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    /**
      * 販売代理店またはサイトマップ項目を新規作成・更新します。
      */
     public function saveSiteDirectoryEntry(array $data): int
     {
         $this->ensureSiteDirectoryStorage();
-        $fields = ['directory_type', 'group_name', 'title', 'detail', 'product_slug', 'sort_order', 'is_active'];
+        $fields = ['directory_type', 'group_name', 'title', 'detail', 'product_slug', 'sort_order', 'is_active', 'is_enabled'];
         $values = [];
         foreach ($fields as $field) {
             $values[$field] = $data[$field] ?? null;
         }
+        $values['is_enabled'] = $data['is_enabled'] ?? 1;
         if (!empty($data['id'])) {
             $values['id'] = (int)$data['id'];
             $assignments = implode(', ', array_map(static fn(string $field): string => "{$field} = :{$field}", $fields));
@@ -108,6 +126,93 @@ final class CmsRepository
     }
 
     /**
+     * 商品保存時に、同じslugのサイトマップ項目を新規作成または更新します。
+     * 商品を非公開にした場合はサイトマップ項目も非公開にし、到達不能なリンクを防ぎます。
+     */
+    public function syncProductSiteMapEntry(
+        ?string $previousSlug,
+        string $productSlug,
+        bool $shouldList,
+        string $groupName,
+        string $title,
+        string $detail,
+        int $sortOrder,
+        bool $isProductPublished
+    ): void {
+        $this->ensureSiteDirectoryStorage();
+        $previousSlug = trim((string)$previousSlug);
+        $productSlug = trim($productSlug);
+        $slugs = array_values(array_unique(array_filter([$previousSlug, $productSlug])));
+        if (!$slugs) {
+            return;
+        }
+
+        $placeholders = implode(', ', array_fill(0, count($slugs), '?'));
+        $find = $this->pdo->prepare(
+            "SELECT * FROM site_directory_entries
+             WHERE directory_type = 'sitemap' AND product_slug IN ({$placeholders})
+             ORDER BY id LIMIT 1"
+        );
+        $find->execute($slugs);
+        $entry = $find->fetch() ?: null;
+        $isActive = $shouldList && $isProductPublished ? 1 : 0;
+
+        if ($entry) {
+            $this->saveSiteDirectoryEntry([
+                'id' => (int)$entry['id'],
+                'directory_type' => 'sitemap',
+                'group_name' => $shouldList ? $groupName : $entry['group_name'],
+                'title' => $shouldList ? $title : $entry['title'],
+                'detail' => $shouldList ? $detail : $entry['detail'],
+                'product_slug' => $productSlug,
+                'sort_order' => $shouldList ? $sortOrder : (int)$entry['sort_order'],
+                'is_active' => $isActive,
+                'is_enabled' => $shouldList ? 1 : 0,
+            ]);
+            return;
+        }
+
+        if (!$shouldList) {
+            return;
+        }
+
+        $this->saveSiteDirectoryEntry([
+            'directory_type' => 'sitemap',
+            'group_name' => $groupName,
+            'title' => $title,
+            'detail' => $detail,
+            'product_slug' => $productSlug,
+            'sort_order' => $sortOrder,
+            'is_active' => $isActive,
+            'is_enabled' => 1,
+        ]);
+    }
+
+    /**
+     * 商品の公開状態に合わせ、関連するサイトマップ項目をまとめて更新します。
+     */
+    public function setProductSiteMapEntryActive(string $productSlug, bool $isActive): void
+    {
+        $this->ensureSiteDirectoryStorage();
+        $stmt = $this->pdo->prepare(
+            'UPDATE site_directory_entries SET is_active = ? WHERE directory_type = "sitemap" AND product_slug = ?'
+        );
+        $stmt->execute([$isActive ? 1 : 0, $productSlug]);
+    }
+
+    /**
+     * 商品を完全削除したとき、対応するサイトマップ項目も削除します。
+     */
+    public function deleteProductSiteMapEntries(string $productSlug): void
+    {
+        $this->ensureSiteDirectoryStorage();
+        $stmt = $this->pdo->prepare(
+            'DELETE FROM site_directory_entries WHERE directory_type = "sitemap" AND product_slug = ?'
+        );
+        $stmt->execute([$productSlug]);
+    }
+
+    /**
      * 本番反映時に管理テーブルと提供済みの初期一覧を一度だけ準備します。
      * 既存データがある場合は追加・更新しません。
      */
@@ -126,6 +231,7 @@ final class CmsRepository
                 product_slug VARCHAR(190) NOT NULL DEFAULT \'\',
                 sort_order INT NOT NULL DEFAULT 100,
                 is_active TINYINT(1) NOT NULL DEFAULT 1,
+                is_enabled TINYINT(1) NOT NULL DEFAULT 1,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (id),
@@ -133,6 +239,10 @@ final class CmsRepository
                 KEY idx_site_directory_product_slug (product_slug)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
         );
+        $column = $this->pdo->query("SHOW COLUMNS FROM site_directory_entries LIKE 'is_enabled'")->fetch();
+        if (!$column) {
+            $this->pdo->exec('ALTER TABLE site_directory_entries ADD COLUMN is_enabled TINYINT(1) NOT NULL DEFAULT 1 AFTER is_active');
+        }
         $hasEntries = (int)$this->pdo->query('SELECT COUNT(*) FROM site_directory_entries')->fetchColumn() > 0;
         if (!$hasEntries) {
             $seedPath = HTTPDOCS_ROOT . '/database/site_directory_seed.json';

@@ -10,6 +10,15 @@
 <?php if (!empty($imagesSaved)): ?><div class="notice">画像設定を保存しました。</div><?php endif; ?>
 <?php if (!empty($restored)): ?><div class="notice">商品を下書きへ復元しました。</div><?php endif; ?>
 <?php $isDeleted = ($product['status'] ?? '') === 'deleted'; ?>
+<?php
+$siteMapEntry = $siteMapEntry ?? null;
+$siteMapGroups = $siteMapGroups ?? [];
+$siteMapEnabled = $product ? !empty($siteMapEntry['is_enabled']) : true;
+$siteMapGroup = (string)($siteMapEntry['group_name'] ?? '');
+$siteMapTitle = (string)($siteMapEntry['title'] ?? ($product['name_ja'] ?? ''));
+$siteMapDetail = (string)($siteMapEntry['detail'] ?? ($siteMapCategoryName ?? ''));
+$siteMapSortOrder = (int)($siteMapEntry['sort_order'] ?? ($product['sort_order'] ?? 100));
+?>
 <?php if ($isDeleted): ?><div class="error-box">この商品は削除済みです。公開サイトには表示されません。</div><?php endif; ?>
 <?php $richEditorAttrs = 'data-rich-editor data-rich-ai-endpoint="' . e(url('/admin/ai-clean-html')) . '" data-rich-ai-csrf="' . e(csrf_token()) . '"'; ?>
 <form class="admin-form" method="post" enctype="multipart/form-data" action="<?= e(url('/admin/product-edit')) ?>">
@@ -168,6 +177,32 @@
     <label>画像追加
         <input type="file" name="images[]" multiple accept="image/*">
     </label>
+    <section class="admin-panel product-site-map-sync" data-product-site-map-sync>
+        <h2>サイトマップ掲載</h2>
+        <p class="admin-help">公開商品は、ここで指定したメーカーと車種名で車種別サイトマップにも掲載します。</p>
+        <label class="checkbox-label">
+            <input type="checkbox" name="site_map_enabled" value="1" data-site-map-enabled <?= $siteMapEnabled ? 'checked' : '' ?>>
+            この商品をサイトマップに掲載する
+        </label>
+        <div class="product-site-map-fields" data-site-map-fields>
+            <label>メーカー
+                <input name="site_map_group_name" list="site-map-manufacturers" required value="<?= e($siteMapGroup) ?>" data-site-map-required>
+                <datalist id="site-map-manufacturers">
+                    <?php foreach ($siteMapGroups as $group): ?><option value="<?= e($group) ?>"><?php endforeach; ?>
+                </datalist>
+                <small class="muted">一覧にないメーカー名も入力できます。</small>
+            </label>
+            <label>車種・型式
+                <input name="site_map_title" required value="<?= e($siteMapTitle) ?>" data-site-map-title data-site-map-required>
+            </label>
+            <label>掲載ブランド
+                <input name="site_map_detail" value="<?= e($siteMapDetail) ?>" data-site-map-detail>
+            </label>
+            <label>サイトマップ内の並び順
+                <input type="number" name="site_map_sort_order" value="<?= e($siteMapSortOrder) ?>">
+            </label>
+        </div>
+    </section>
     <label>状態
         <select name="status">
             <option value="published" <?= ($product['status'] ?? 'published') === 'published' ? 'selected' : '' ?>>公開</option>

@@ -316,6 +316,7 @@ if ($path === '/admin/product-delete') {
 
     if ($action === 'restore') {
         $repo->restoreProduct($productId);
+        $repo->setProductSiteMapEntryActive((string)$product['slug'], false);
         redirect_to('/admin/product-edit?id=' . $productId . '&restored=1');
     }
 
@@ -323,11 +324,13 @@ if ($path === '/admin/product-delete') {
         foreach ($repo->productImages($productId) as $image) {
             $imageService->deleteProductImageFiles($image);
         }
+        $repo->deleteProductSiteMapEntries((string)$product['slug']);
         $repo->permanentlyDeleteProduct($productId);
         redirect_to('/admin/products?status=deleted&permanent_deleted=1');
     }
 
     $repo->softDeleteProduct($productId);
+    $repo->setProductSiteMapEntryActive((string)$product['slug'], false);
     redirect_to('/admin/products?status=deleted&deleted=1');
 }
 
@@ -354,6 +357,18 @@ if ($path === '/admin/product-edit') {
             'sort_order' => (int)($_POST['sort_order'] ?? 100),
         ];
         $productId = $repo->saveProduct($payload);
+        $siteMapGroup = trim((string)($_POST['site_map_group_name'] ?? ''));
+        $siteMapEnabled = isset($_POST['site_map_enabled']);
+        $repo->syncProductSiteMapEntry(
+            $product['slug'] ?? null,
+            $payload['slug'],
+            $siteMapEnabled,
+            $siteMapGroup !== '' ? $siteMapGroup : 'OTHER PARTS',
+            trim((string)($_POST['site_map_title'] ?? '')) ?: $payload['name_ja'],
+            trim((string)($_POST['site_map_detail'] ?? '')),
+            (int)($_POST['site_map_sort_order'] ?? $payload['sort_order']),
+            $payload['status'] === 'published'
+        );
 
         $specs = [];
         if (isset($_POST['spec_label_ja']) || isset($_POST['spec_value_ja']) || isset($_POST['spec_label_en']) || isset($_POST['spec_value_en'])) {
@@ -425,6 +440,18 @@ if ($path === '/admin/product-edit') {
             ]);
         }
     }
+    $siteMapEntry = $product ? $repo->siteMapEntryByProductSlug((string)$product['slug']) : null;
+    $siteMapGroups = [];
+    foreach ($repo->siteDirectoryEntries('sitemap', false) as $siteMapItem) {
+        $groupName = trim((string)$siteMapItem['group_name']);
+        if ($groupName !== '' && !in_array($groupName, $siteMapGroups, true)) {
+            $siteMapGroups[] = $groupName;
+        }
+    }
+    $categoryNames = [];
+    foreach ($repo->categories(false) as $category) {
+        $categoryNames[(int)$category['id']] = (string)$category['name_ja'];
+    }
     admin_render('product_edit', [
         'product' => $product,
         'categories' => $repo->categories(false),
@@ -435,6 +462,9 @@ if ($path === '/admin/product-edit') {
         'imageDeleted' => isset($_GET['image_deleted']),
         'imagesSaved' => isset($_GET['images_saved']),
         'restored' => isset($_GET['restored']),
+        'siteMapEntry' => $siteMapEntry,
+        'siteMapGroups' => $siteMapGroups,
+        'siteMapCategoryName' => $categoryNames[(int)($product['category_id'] ?? 0)] ?? '',
         'title' => $product ? '商品編集' : '商品追加',
     ]);
     return;

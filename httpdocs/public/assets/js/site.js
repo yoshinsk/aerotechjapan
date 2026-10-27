@@ -62,6 +62,31 @@ if (siteMapRoot) {
   updateSiteMap();
 }
 
+/**
+ * 商品編集画面のサイトマップ掲載欄を、掲載の有無に合わせて有効・無効にします。
+ */
+document.querySelectorAll('[data-product-site-map-sync]').forEach((section) => {
+  const enabled = section.querySelector('[data-site-map-enabled]');
+  const fields = section.querySelector('[data-site-map-fields]');
+  const requiredInputs = section.querySelectorAll('[data-site-map-required]');
+  if (!enabled || !fields) {
+    return;
+  }
+  const updateSiteMapFields = () => {
+    const isEnabled = enabled.checked;
+    fields.hidden = !isEnabled;
+    requiredInputs.forEach((input) => {
+      input.required = isEnabled;
+      input.disabled = !isEnabled;
+    });
+    fields.querySelectorAll('input:not([data-site-map-required])').forEach((input) => {
+      input.disabled = !isEnabled;
+    });
+  };
+  enabled.addEventListener('change', updateSiteMapFields);
+  updateSiteMapFields();
+});
+
 document.querySelectorAll('[data-gallery-thumb]').forEach((button) => {
   button.addEventListener('click', () => {
     const target = document.querySelector('[data-gallery-main]');

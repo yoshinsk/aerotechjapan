@@ -700,6 +700,25 @@ button.button {
   width: auto;
 }
 
+/* 商品登録とサイトマップ掲載の対応を一つの編集単位として表示します。 */
+.product-site-map-sync {
+  display: grid;
+  gap: 14px;
+}
+
+.product-site-map-sync h2 {
+  margin: 0;
+}
+
+.product-site-map-fields {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #282828;
+  border-radius: var(--radius);
+  background: #101010;
+}
+
 .admin-help {
   margin: 0 0 14px;
   color: #b8c0c8;
