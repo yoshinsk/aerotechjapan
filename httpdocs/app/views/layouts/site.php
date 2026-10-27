@@ -18,7 +18,7 @@ $pageTitle = ($title ?? config_value('app.name')) . ' | ' . config_value('app.na
     <link rel="apple-touch-icon" href="<?= e(asset_url('img/apple-touch-icon.png')) ?>?v=20260709">
     <link rel="manifest" href="<?= e(url('/site.webmanifest')) ?>?v=20260709">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= e(asset_url('css/public.css')) ?>?v=20260709-html-ai">
+    <link rel="stylesheet" href="<?= e(asset_url('css/public.css')) ?>?v=20261027-site-directories">
 </head>
 <body class="site-body">
 <header class="site-header navbar navbar-expand-lg">
@@ -33,6 +33,8 @@ $pageTitle = ($title ?? config_value('app.name')) . ' | ' . config_value('app.na
             <div class="navbar-nav ms-lg-auto">
                 <a class="nav-link" href="<?= e(url('/products')) ?>"><?= e(t('製品', 'Products')) ?></a>
                 <a class="nav-link" href="<?= e(url('/price-lists')) ?>"><?= e(t('価格表リスト', 'Price Lists')) ?></a>
+                <a class="nav-link" href="<?= e(url('/site-map')) ?>"><?= e(t('車種別サイトマップ', 'Site Map')) ?></a>
+                <a class="nav-link" href="<?= e(url('/distributors')) ?>"><?= e(t('販売代理店', 'Distributors')) ?></a>
                 <a class="nav-link" href="<?= e(url('/news')) ?>"><?= e(t('ニュース', 'News')) ?></a>
                 <a class="nav-link" href="<?= e(url('/page/about')) ?>"><?= e(t('会社情報', 'About')) ?></a>
                 <a class="nav-link" href="<?= e(url('/contact')) ?>"><?= e(t('お問い合わせ', 'Contact')) ?></a>
@@ -58,6 +60,6 @@ $pageTitle = ($title ?? config_value('app.name')) . ' | ' . config_value('app.na
     </nav>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= e(asset_url('js/site.js')) ?>?v=20260709-html-ai"></script>
+<script src="<?= e(asset_url('js/site.js')) ?>?v=20261027-site-directories"></script>
 </body>
 </html>

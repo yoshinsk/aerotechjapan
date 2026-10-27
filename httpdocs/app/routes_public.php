@@ -67,7 +67,7 @@ $legacyPageMap = [
     '/event/event.html' => '/page/events',
     '/magazine.html' => '/page/magazine',
     '/link.html' => '/page/links',
-    '/distributor-oversea.html' => '/page/distributors',
+    '/distributor-oversea.html' => '/distributors',
 ];
 if (isset($legacyPageMap[$path])) {
     redirect_to($legacyPageMap[$path]);
@@ -91,6 +91,22 @@ if ($path === '/pages') {
     render('pages_index', [
         'pages' => $repo->pages(true),
         'title' => t('サイトマップ', 'Sitemap'),
+    ]);
+    return;
+}
+
+if ($path === '/distributors') {
+    render('distributors', [
+        'entries' => $repo->siteDirectoryEntries('distributor'),
+        'title' => t('販売代理店', 'Distributors'),
+    ]);
+    return;
+}
+
+if ($path === '/site-map') {
+    render('site_map', [
+        'entries' => $repo->siteDirectoryEntries('sitemap'),
+        'title' => t('サイトマップ', 'Site Map'),
     ]);
     return;
 }

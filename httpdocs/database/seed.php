@@ -23,6 +23,7 @@ function run_seed(): void
         seed_pages($pdo);
         seed_news($pdo);
         seed_products($pdo, $categoryIds);
+        seed_site_directories($pdo);
         seed_admin_user($pdo);
         $pdo->commit();
         echo "Seed completed.\n";
@@ -30,6 +31,29 @@ function run_seed(): void
         $pdo->rollBack();
         fwrite(STDERR, "Seed failed: {$e->getMessage()}\n");
         exit(1);
+    }
+}
+
+/**
+ * 初期化時に同梱の販売代理店とサイトマップ項目を重複なく追加します。
+ */
+function seed_site_directories(PDO $pdo): void
+{
+    $entries = json_decode((string)file_get_contents(__DIR__ . '/site_directory_seed.json'), true, 512, JSON_THROW_ON_ERROR);
+    $exists = $pdo->prepare('SELECT id FROM site_directory_entries WHERE directory_type = ? AND group_name = ? AND title = ? AND detail = ? LIMIT 1');
+    $insert = $pdo->prepare(
+        'INSERT INTO site_directory_entries (directory_type, group_name, title, detail, product_slug, sort_order, is_active)
+         VALUES (?, ?, ?, ?, ?, ?, ?)'
+    );
+    foreach ($entries as $entry) {
+        $exists->execute([$entry['type'], $entry['group'], $entry['title'], $entry['detail']]);
+        if ($exists->fetchColumn() !== false) {
+            continue;
+        }
+        $insert->execute([
+            $entry['type'], $entry['group'], $entry['title'], $entry['detail'],
+            $entry['product_slug'], $entry['sort_order'], $entry['is_active'],
+        ]);
     }
 }
 

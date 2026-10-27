@@ -105,6 +105,8 @@ AEROTECH_ADMIN_EMAIL='admin@aero-tech.co.jp' AEROTECH_ADMIN_PASSWORD='任意の�
 ```bash
 mysql -u aerotech_user -p aerotech_cms < httpdocs/database/migrations/20260708_assets_calendar.sql
 mysql -u aerotech_user -p aerotech_cms < httpdocs/database/migrations/20260709_business_calendar_events.sql
+mysql -u aerotech_user -p aerotech_cms < httpdocs/database/migrations/20261027_site_directories.sql
+php httpdocs/database/seed_site_directories.php
 ```
 
 Pleskのドキュメントルートは `/var/www/vhosts/aero-tech.co.jp/httpdocs/public` に設定する。

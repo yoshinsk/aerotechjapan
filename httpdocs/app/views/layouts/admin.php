@@ -28,6 +28,8 @@ $pageTitle = ($title ?? 'CMS') . ' | AERO TECH CMS';
         <a href="<?= e(url('/admin/products')) ?>">商品</a>
         <a href="<?= e(url('/admin/categories')) ?>">カテゴリ</a>
         <a href="<?= e(url('/admin/price-lists')) ?>">価格表</a>
+        <a href="<?= e(url('/admin/site-map')) ?>">車種別サイトマップ</a>
+        <a href="<?= e(url('/admin/distributors')) ?>">販売代理店</a>
         <a href="<?= e(url('/admin/business-calendar')) ?>">営業日</a>
         <a href="<?= e(url('/admin/news')) ?>">ニュース</a>
         <a href="<?= e(url('/admin/pages')) ?>">固定ページ</a>

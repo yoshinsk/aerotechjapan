@@ -1,0 +1,884 @@
+[
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "GR COROLLA（GZEA14H）",
+    "detail": "DIRect",
+    "product_slug": "gr-corolla-1",
+    "sort_order": 10,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "GUN125 HILUX GR SPORT",
+    "detail": "乱人",
+    "product_slug": "gun125-hilux-gr-sport",
+    "sort_order": 20,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "GR86（ZN8）・SUBARU BRZ（ZD8）",
+    "detail": "DIRect",
+    "product_slug": "direct-editions-zn8gr86zd8brz",
+    "sort_order": 30,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "GR YARIS Gen1（GXPA16）",
+    "detail": "DIRect",
+    "product_slug": "gr-yaris-gen1",
+    "sort_order": 40,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "80 SUPRA（JZA80）",
+    "detail": "RANDO SPORTS",
+    "product_slug": "sp-80spura",
+    "sort_order": 50,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "10系 ALPHARD 前期",
+    "detail": "RANDO Style",
+    "product_slug": "wr-alphardzenkimsas",
+    "sort_order": 60,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "10系 ALPHARD 後期",
+    "detail": "RANDO Style",
+    "product_slug": "wr-alphardgomsas",
+    "sort_order": 70,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "200系 HIACE 標準ボディ 1/2型",
+    "detail": "乱人",
+    "product_slug": "r-200hiace",
+    "sort_order": 80,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "200系 HIACE 標準ボディ 4型以降",
+    "detail": "乱人",
+    "product_slug": "r-200hiace-4gata",
+    "sort_order": 90,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "200系 HIACE ワイドボディ",
+    "detail": "乱人",
+    "product_slug": "r-200hiace-wide",
+    "sort_order": 100,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "20系 CELSIOR 前期",
+    "detail": "RANDO Style",
+    "product_slug": "r-20celsiorzen",
+    "sort_order": 110,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "20系 CELSIOR 後期",
+    "detail": "RANDO Style",
+    "product_slug": "r-20celsiorgohalf",
+    "sort_order": 120,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "30系 CELSIOR 前期",
+    "detail": "RANDO Style",
+    "product_slug": "r-3031celsiorzen",
+    "sort_order": 130,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "30系 CELSIOR 後期",
+    "detail": "RANDO Style",
+    "product_slug": "r-3031celsiorgo",
+    "sort_order": 140,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "UCF30/31 CELSIOR 前期",
+    "detail": "AVANT",
+    "product_slug": "avant-3031celsior-zenki",
+    "sort_order": 150,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "UCF30/31 CELSIOR 後期",
+    "detail": "Rando Ryu LUX",
+    "product_slug": "l-3031celsior-kouki",
+    "sort_order": 160,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "JZS160/161 ARISTO",
+    "detail": "Rando Ryu LUX",
+    "product_slug": "se-randoryu-16aristo",
+    "sort_order": 170,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "17 CROWN ROYAL / ATHLETE",
+    "detail": "Rando Ryu LUX",
+    "product_slug": "se-randoryu-17crown-athlete",
+    "sort_order": 180,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "17 CROWN ESTATE",
+    "detail": "Rando Ryu LUX",
+    "product_slug": "w-crownestate",
+    "sort_order": 190,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "50系 ESTIMA AERAS",
+    "detail": "RANDO Style",
+    "product_slug": "wr-estima-gsracr-aeras",
+    "sort_order": 200,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "50系 ESTIMA G・X",
+    "detail": "RANDO Style",
+    "product_slug": "wr-new-estima-gsracr50",
+    "sort_order": 210,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "AHR20W ESTIMA HYBRID 前期",
+    "detail": "RANDO Style",
+    "product_slug": "r-ahr20w-estimahybrid",
+    "sort_order": 220,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "AHR20W ESTIMA HYBRID 中期",
+    "detail": "RANDO Style",
+    "product_slug": "r-ahr20w-estimahybrid-kouki",
+    "sort_order": 230,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "NHW20 PRIUS",
+    "detail": "AVANT",
+    "product_slug": "bk-nhw20-prius-avant",
+    "sort_order": 240,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "NHW20 PRIUS",
+    "detail": "乱人 Black Edition",
+    "product_slug": "bk-nhw20-prius",
+    "sort_order": 250,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "ZVW30 PRIUS 前期",
+    "detail": "RANDO Style",
+    "product_slug": "r-zvw30-prius",
+    "sort_order": 260,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "ZVW30 PRIUS 後期",
+    "detail": "AVANT",
+    "product_slug": "avant-zvw30prius",
+    "sort_order": 270,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "ZVW40/41W PRIUS α 前期",
+    "detail": "AVANT",
+    "product_slug": "avant-zvw4041priusa",
+    "sort_order": 280,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "QNC2#系 bB",
+    "detail": "RANDO Style",
+    "product_slug": "wr-new-bb-qnc20",
+    "sort_order": 290,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "ZRR70/75W NOAH Si・S",
+    "detail": "RANDO Style",
+    "product_slug": "r-noah-zzr70-sis",
+    "sort_order": 300,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "ZRR70/75G NOAH X/G/YY",
+    "detail": "RANDO Style",
+    "product_slug": "r-noah-zzr70g-xgyy",
+    "sort_order": 310,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "ZRR70/75W VOXY ZS/Z",
+    "detail": "RANDO Style",
+    "product_slug": "r-zrr70w-voxy-zs-z",
+    "sort_order": 320,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "TOYOTA・LEXUS",
+    "title": "LEXUS GS 前期",
+    "detail": "RANDO Style",
+    "product_slug": "r-lexus-gs",
+    "sort_order": 330,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "NISSAN",
+    "title": "Y33 CIMA",
+    "detail": "Rando Ryu LUX",
+    "product_slug": "l-y33cima",
+    "sort_order": 340,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "NISSAN",
+    "title": "BNR34 GT-R SKYLINE",
+    "detail": "RANDO SPORTS",
+    "product_slug": "sp-r34gt-r",
+    "sort_order": 350,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "HONDA",
+    "title": "CIVIC TYPE-R FL5",
+    "detail": "DIRect",
+    "product_slug": "direct-honda-civic-type-r",
+    "sort_order": 360,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "HONDA",
+    "title": "EK CIVIC",
+    "detail": "乱人 Black Edition",
+    "product_slug": "bk-ek9-civic",
+    "sort_order": 370,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "HONDA",
+    "title": "DC2 INTEGRA",
+    "detail": "乱人 Black Edition",
+    "product_slug": "bk-dc2-integra",
+    "sort_order": 380,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "HONDA",
+    "title": "DC5 INTEGRA",
+    "detail": "RANDO SPORTS",
+    "product_slug": "sp-dc5integra",
+    "sort_order": 390,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "HONDA",
+    "title": "AP1 S2000",
+    "detail": "RANDO Style",
+    "product_slug": "r-ap1-s2000",
+    "sort_order": 400,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "HONDA",
+    "title": "AP1/2 S2000 Normal BODY KIT",
+    "detail": "DIRect",
+    "product_slug": "direct-ap12s2000-normalbody",
+    "sort_order": 410,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "HONDA",
+    "title": "AP1/2 S2000 WIDE BODY KIT",
+    "detail": "DIRect",
+    "product_slug": "direct-ap12s2000",
+    "sort_order": 420,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "HONDA",
+    "title": "GE6/7 FIT",
+    "detail": "RANDO Style",
+    "product_slug": "r-ge67fit",
+    "sort_order": 430,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "HONDA",
+    "title": "GE8/9 FIT RS",
+    "detail": "RANDO Style",
+    "product_slug": "r-ge8-fit-rs-zenki",
+    "sort_order": 440,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "HONDA",
+    "title": "GE6/7 FIT RS・GP1 FIT HYBRID",
+    "detail": "RANDO Style",
+    "product_slug": "r-ge67-gp1-fit",
+    "sort_order": 450,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "HONDA",
+    "title": "ZF1 CR-Z",
+    "detail": "RANDO Style",
+    "product_slug": "r-zf1-cr-z",
+    "sort_order": 460,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "S500/510P HIJET TRUCK 前期",
+    "detail": "乱人",
+    "product_slug": "r-ktruck-s500-510p",
+    "sort_order": 470,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "S500/510P HIJET TRUCK 後期",
+    "detail": "乱人",
+    "product_slug": "r-ktruck-s500-510p-kouki",
+    "sort_order": 480,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "ATRAY / HIJET CARGO S700V/710V",
+    "detail": "乱人",
+    "product_slug": "r-atray-s700v-710v",
+    "sort_order": 490,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "L175/185S MOVE 前期",
+    "detail": "RANDO Style",
+    "product_slug": "r-move",
+    "sort_order": 500,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "L175/185S MOVE 後期",
+    "detail": "RANDO Style",
+    "product_slug": "r-l175-move-koki",
+    "sort_order": 510,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "L175/185S MOVE CUSTOM",
+    "detail": "RANDO Style",
+    "product_slug": "r-movecustom",
+    "sort_order": 520,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "LA100/110S MOVE CUSTOM",
+    "detail": "RANDO Style",
+    "product_slug": "r-movecustom-cba-la100s",
+    "sort_order": 530,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "L375/385S TANTO",
+    "detail": "RANDO Style",
+    "product_slug": "r-l375s-tanto",
+    "sort_order": 540,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "L375/385S TANTO CUSTOM",
+    "detail": "RANDO Style",
+    "product_slug": "r-l375s-tanto-custom",
+    "sort_order": 550,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "LA650/660S TANTO CUSTOM",
+    "detail": "RANDO Style",
+    "product_slug": "r-la650-660s-tanto-custom",
+    "sort_order": 560,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "LA650/660S TANTO Fun Cross",
+    "detail": "RANDO Style",
+    "product_slug": "r-la650-660s-tanto-funcross",
+    "sort_order": 570,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "LA300/310S MIRA e:S",
+    "detail": "RANDO Style",
+    "product_slug": "r-mira-es",
+    "sort_order": 580,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "DAIHATSU",
+    "title": "LA900/910S TAFT",
+    "detail": "RANDO Style",
+    "product_slug": "r-taft-la900s",
+    "sort_order": 590,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "SUZUKI",
+    "title": "ZC33S SWIFT SPORT",
+    "detail": "RANDO SPORTS",
+    "product_slug": "zc33s-swift-sport",
+    "sort_order": 600,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "SUZUKI",
+    "title": "ZC33S SWIFT SPORT",
+    "detail": "DIRect",
+    "product_slug": "direct-zc33s-swiftsport",
+    "sort_order": 610,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "SUZUKI",
+    "title": "SWIFT ZC/ZD11・21系",
+    "detail": "RANDO Style",
+    "product_slug": "r-swift",
+    "sort_order": 620,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "SUZUKI",
+    "title": "HA36S ALTO WORKS / TURBO RS",
+    "detail": "DIRect",
+    "product_slug": "direct-ha36s-alto-works-alto-turbors",
+    "sort_order": 630,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "SUZUKI",
+    "title": "JB64W JIMNY / JB74W SIERRA",
+    "detail": "RANDO Style",
+    "product_slug": "r-jb64w-jb74w",
+    "sort_order": 640,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "MAZDA",
+    "title": "FD3S RX-7",
+    "detail": "DIRect",
+    "product_slug": "bk-fd3s-rx7",
+    "sort_order": 650,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "MAZDA",
+    "title": "SE3P RX-8 前期",
+    "detail": "DIRect",
+    "product_slug": "direct-rx8zeniki",
+    "sort_order": 660,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "MAZDA",
+    "title": "ND5 ROADSTER",
+    "detail": "DIRect",
+    "product_slug": "nd5-roadster",
+    "sort_order": 670,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "MITSUBISHI",
+    "title": "CZ4A LANCER EVOLUTION X",
+    "detail": "RANDO SPORTS",
+    "product_slug": "cz4a-lancer-evolution-x",
+    "sort_order": 680,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "MITSUBISHI",
+    "title": "CZ4A LANCER EVOLUTION X",
+    "detail": "DIRect",
+    "product_slug": "bk-cz4a-lancer-evo",
+    "sort_order": 690,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "MITSUBISHI",
+    "title": "CT9A LANCER EVOLUTION VIII・IX",
+    "detail": "DIRect",
+    "product_slug": "direct-ct9a-lancer-evolution",
+    "sort_order": 700,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "MITSUBISHI",
+    "title": "LANCER EVOLUTION VIII / VIII MR",
+    "detail": "RANDO SPORTS",
+    "product_slug": "rs-lancer8",
+    "sort_order": 710,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "MITSUBISHI",
+    "title": "LANCER EVOLUTION IX / IX MR",
+    "detail": "RANDO SPORTS",
+    "product_slug": "rs-lancer9",
+    "sort_order": 720,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "SUBARU",
+    "title": "TOYOTA 86 / SUBARU BRZ",
+    "detail": "DIRect",
+    "product_slug": "bk-86-brz",
+    "sort_order": 730,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "SUBARU",
+    "title": "GRB/GRF IMPREZA BODY KIT",
+    "detail": "DIRect",
+    "product_slug": "bk-impreza-grb-grf",
+    "sort_order": 740,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "SUBARU",
+    "title": "IMPREZA GVB",
+    "detail": "DIRect",
+    "product_slug": "bk-impreza-gvb",
+    "sort_order": 750,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "SUBARU",
+    "title": "IMPREZA GC8",
+    "detail": "RANDO SPORTS",
+    "product_slug": "sp-impreza",
+    "sort_order": 760,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "SUBARU",
+    "title": "LEGACY TOURING WAGON BH5",
+    "detail": "乱人",
+    "product_slug": "w-lagacy-touring-wagon",
+    "sort_order": 770,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "IMPORT",
+    "title": "ALPINE A110S・GT",
+    "detail": "AVANT",
+    "product_slug": "avant-alpine-a110s-gt",
+    "sort_order": 780,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "IMPORT",
+    "title": "ABARTH 124 spider",
+    "detail": "DIRect",
+    "product_slug": "direct-abarth-124-spider",
+    "sort_order": 790,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "IMPORT",
+    "title": "BMW E90 3シリーズ セダン",
+    "detail": "AVANT",
+    "product_slug": "avant-bmw-e90sedan",
+    "sort_order": 800,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "IMPORT",
+    "title": "BMW E92 3シリーズ クーペ",
+    "detail": "AVANT",
+    "product_slug": "avant-bmw-e92coupe",
+    "sort_order": 810,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "IMPORT",
+    "title": "BMW MINI COOPER S R56",
+    "detail": "RANDO Style",
+    "product_slug": "r-mini-r56",
+    "sort_order": 820,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "IMPORT",
+    "title": "PORSCHE 996",
+    "detail": "AVANT",
+    "product_slug": "avant-porsche-996",
+    "sort_order": 830,
+    "is_active": 1
+  },
+  {
+    "type": "sitemap",
+    "group": "OTHER PARTS",
+    "title": "CARBON BONNET（ノーマル形状）",
+    "detail": "CARBON BONNET",
+    "product_slug": "ca",
+    "sort_order": 840,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "CUSCO USA Inc.",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 10,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "Mackin Industries, Inc.",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 20,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "株式会社レイズ",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 30,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "マルカサービス株式会社",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 40,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "株式会社ジャパン三陽",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 50,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "株式会社ホットスタッフコーポレーション",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 60,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "株式会社ヴァルド",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 70,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "有限会社タカマコンペティションプロダクト",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 80,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "協栄産業株式会社",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 90,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "株式会社5ZIGENインターナショナル",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 100,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "株式会社テイクオフ",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 110,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "カードック中山有限会社",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 120,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "株式会社高野自動車用品",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 130,
+    "is_active": 1
+  },
+  {
+    "type": "distributor",
+    "group": "販売代理店",
+    "title": "株式会社クランクネオ",
+    "detail": "",
+    "product_slug": "",
+    "sort_order": 140,
+    "is_active": 1
+  }
+]

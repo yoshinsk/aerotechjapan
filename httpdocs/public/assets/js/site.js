@@ -9,6 +9,59 @@ document.querySelectorAll('[data-nav-toggle]').forEach((button) => {
   });
 });
 
+/**
+ * 車種別サイトマップの検索とメーカーへの絞り込みを制御します。
+ */
+const siteMapRoot = document.querySelector('[data-site-map]');
+if (siteMapRoot) {
+  const siteMapSearch = siteMapRoot.querySelector('[data-site-map-search]');
+  const siteMapFilters = siteMapRoot.querySelector('[data-site-map-filters]');
+  const siteMapGroups = [...siteMapRoot.querySelectorAll('[data-site-map-group]')];
+  const siteMapCount = siteMapRoot.querySelector('[data-site-map-count]');
+  const siteMapEmpty = siteMapRoot.querySelector('[data-site-map-empty]');
+  let activeSiteMapGroup = '';
+  const normalizeSiteMapText = (value) => value.toLocaleLowerCase('ja-JP').replace(/[・（）()\s/]/g, '');
+
+  const updateSiteMap = () => {
+    const keyword = normalizeSiteMapText(siteMapSearch?.value || '');
+    let visible = 0;
+    siteMapGroups.forEach((group) => {
+      const groupMatches = activeSiteMapGroup === '' || group.dataset.siteMapGroup === activeSiteMapGroup;
+      let groupVisible = 0;
+      group.querySelectorAll('[data-site-map-entry]').forEach((entry) => {
+        const matches = groupMatches && normalizeSiteMapText(entry.dataset.siteMapEntry || '').includes(keyword);
+        entry.hidden = !matches;
+        if (matches) {
+          groupVisible += 1;
+          visible += 1;
+        }
+      });
+      group.hidden = groupVisible === 0;
+    });
+    if (siteMapCount) {
+      siteMapCount.textContent = String(visible);
+    }
+    if (siteMapEmpty) {
+      siteMapEmpty.hidden = visible !== 0;
+    }
+  };
+
+  siteMapGroups.forEach((group) => {
+    const name = group.dataset.siteMapGroup || '';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = name;
+    button.addEventListener('click', () => {
+      activeSiteMapGroup = activeSiteMapGroup === name ? '' : name;
+      siteMapFilters?.querySelectorAll('button').forEach((item) => item.classList.toggle('is-active', item === button && activeSiteMapGroup !== ''));
+      updateSiteMap();
+    });
+    siteMapFilters?.append(button);
+  });
+  siteMapSearch?.addEventListener('input', updateSiteMap);
+  updateSiteMap();
+}
+
 document.querySelectorAll('[data-gallery-thumb]').forEach((button) => {
   button.addEventListener('click', () => {
     const target = document.querySelector('[data-gallery-main]');

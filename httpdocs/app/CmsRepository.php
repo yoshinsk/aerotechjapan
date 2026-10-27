@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 final class CmsRepository
 {
+    private static bool $siteDirectoryStorageReady = false;
+
     public function __construct(private PDO $pdo)
     {
     }
@@ -31,13 +33,122 @@ final class CmsRepository
 
     public function counts(): array
     {
+        $this->ensureSiteDirectoryStorage();
         return [
             'products' => (int)$this->pdo->query('SELECT COUNT(*) FROM products')->fetchColumn(),
             'categories' => (int)$this->pdo->query('SELECT COUNT(*) FROM categories')->fetchColumn(),
             'news' => (int)$this->pdo->query('SELECT COUNT(*) FROM news_posts')->fetchColumn(),
             'price_lists' => (int)$this->pdo->query('SELECT COUNT(*) FROM price_lists')->fetchColumn(),
             'inquiries' => (int)$this->pdo->query('SELECT COUNT(*) FROM inquiries')->fetchColumn(),
+            'distributors' => (int)$this->pdo->query('SELECT COUNT(*) FROM site_directory_entries WHERE directory_type = "distributor"')->fetchColumn(),
+            'site_map_entries' => (int)$this->pdo->query('SELECT COUNT(*) FROM site_directory_entries WHERE directory_type = "sitemap"')->fetchColumn(),
         ];
+    }
+
+    /**
+     * 公開用または管理用の一覧データを、紐付く公開商品と代表画像を含めて返します。
+     */
+    public function siteDirectoryEntries(string $type, bool $activeOnly = true): array
+    {
+        $this->ensureSiteDirectoryStorage();
+        $where = $activeOnly ? 'AND d.is_active = 1' : '';
+        $stmt = $this->pdo->prepare(
+            "SELECT d.*,
+                    p.id AS product_id, p.name_ja AS product_name_ja, p.status AS product_status,
+                    (SELECT COALESCE(NULLIF(thumb_path, ''), NULLIF(large_path, ''), path)
+                     FROM product_images WHERE product_id = p.id
+                     ORDER BY is_main DESC, sort_order, id LIMIT 1) AS product_image
+             FROM site_directory_entries d
+             LEFT JOIN products p ON p.slug = d.product_slug AND p.status = 'published'
+             WHERE d.directory_type = ? {$where}
+             ORDER BY d.sort_order, d.id"
+        );
+        $stmt->execute([$type]);
+        return $stmt->fetchAll();
+    }
+
+    public function siteDirectoryEntryById(int $id, string $type): ?array
+    {
+        $this->ensureSiteDirectoryStorage();
+        $stmt = $this->pdo->prepare('SELECT * FROM site_directory_entries WHERE id = ? AND directory_type = ? LIMIT 1');
+        $stmt->execute([$id, $type]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    /**
+     * 販売代理店またはサイトマップ項目を新規作成・更新します。
+     */
+    public function saveSiteDirectoryEntry(array $data): int
+    {
+        $this->ensureSiteDirectoryStorage();
+        $fields = ['directory_type', 'group_name', 'title', 'detail', 'product_slug', 'sort_order', 'is_active'];
+        $values = [];
+        foreach ($fields as $field) {
+            $values[$field] = $data[$field] ?? null;
+        }
+        if (!empty($data['id'])) {
+            $values['id'] = (int)$data['id'];
+            $assignments = implode(', ', array_map(static fn(string $field): string => "{$field} = :{$field}", $fields));
+            $this->pdo->prepare("UPDATE site_directory_entries SET {$assignments}, updated_at = NOW() WHERE id = :id")->execute($values);
+            return $values['id'];
+        }
+        $this->pdo->prepare(
+            'INSERT INTO site_directory_entries (' . implode(', ', $fields) . ') VALUES (:' . implode(', :', $fields) . ')'
+        )->execute($values);
+        return (int)$this->pdo->lastInsertId();
+    }
+
+    public function deleteSiteDirectoryEntry(int $id, string $type): bool
+    {
+        $this->ensureSiteDirectoryStorage();
+        $stmt = $this->pdo->prepare('DELETE FROM site_directory_entries WHERE id = ? AND directory_type = ?');
+        $stmt->execute([$id, $type]);
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * 本番反映時に管理テーブルと提供済みの初期一覧を一度だけ準備します。
+     * 既存データがある場合は追加・更新しません。
+     */
+    private function ensureSiteDirectoryStorage(): void
+    {
+        if (self::$siteDirectoryStorageReady) {
+            return;
+        }
+        $this->pdo->exec(
+            'CREATE TABLE IF NOT EXISTS site_directory_entries (
+                id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                directory_type VARCHAR(32) NOT NULL,
+                group_name VARCHAR(190) NOT NULL DEFAULT \'\',
+                title VARCHAR(255) NOT NULL,
+                detail VARCHAR(255) NOT NULL DEFAULT \'\',
+                product_slug VARCHAR(190) NOT NULL DEFAULT \'\',
+                sort_order INT NOT NULL DEFAULT 100,
+                is_active TINYINT(1) NOT NULL DEFAULT 1,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                KEY idx_site_directory_type (directory_type, is_active, group_name, sort_order),
+                KEY idx_site_directory_product_slug (product_slug)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+        );
+        $hasEntries = (int)$this->pdo->query('SELECT COUNT(*) FROM site_directory_entries')->fetchColumn() > 0;
+        if (!$hasEntries) {
+            $seedPath = HTTPDOCS_ROOT . '/database/site_directory_seed.json';
+            $entries = json_decode((string)file_get_contents($seedPath), true, 512, JSON_THROW_ON_ERROR);
+            $insert = $this->pdo->prepare(
+                'INSERT INTO site_directory_entries (directory_type, group_name, title, detail, product_slug, sort_order, is_active)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)'
+            );
+            foreach ($entries as $entry) {
+                $insert->execute([
+                    $entry['type'], $entry['group'], $entry['title'], $entry['detail'],
+                    $entry['product_slug'], $entry['sort_order'], $entry['is_active'],
+                ]);
+            }
+        }
+        self::$siteDirectoryStorageReady = true;
     }
 
     public function categories(bool $activeOnly = true): array

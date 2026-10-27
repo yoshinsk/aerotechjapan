@@ -648,6 +648,92 @@ if ($path === '/admin/pages') {
     return;
 }
 
+if ($path === '/admin/distributors') {
+    admin_render('directory_entries', [
+        'entries' => $repo->siteDirectoryEntries('distributor', false),
+        'type' => 'distributor',
+        'title' => '販売代理店管理',
+    ]);
+    return;
+}
+
+if ($path === '/admin/distributor-edit') {
+    $id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
+    $entry = $id > 0 ? $repo->siteDirectoryEntryById($id, 'distributor') : null;
+    if (is_post()) {
+        verify_csrf();
+        $entryId = $repo->saveSiteDirectoryEntry([
+            'id' => $id ?: null,
+            'directory_type' => 'distributor',
+            'group_name' => trim((string)($_POST['group_name'] ?? '販売代理店')),
+            'title' => trim((string)($_POST['title'] ?? '')),
+            'detail' => trim((string)($_POST['detail'] ?? '')),
+            'product_slug' => '',
+            'sort_order' => (int)($_POST['sort_order'] ?? 100),
+            'is_active' => isset($_POST['is_active']) ? 1 : 0,
+        ]);
+        redirect_to('/admin/distributor-edit?id=' . $entryId . '&saved=1');
+    }
+    admin_render('directory_entry_edit', [
+        'entry' => $entry,
+        'type' => 'distributor',
+        'saved' => isset($_GET['saved']),
+        'title' => $entry ? '販売代理店編集' : '販売代理店追加',
+    ]);
+    return;
+}
+
+if ($path === '/admin/distributor-delete') {
+    if (is_post()) {
+        verify_csrf();
+        $repo->deleteSiteDirectoryEntry((int)($_POST['id'] ?? 0), 'distributor');
+    }
+    redirect_to('/admin/distributors?deleted=1');
+}
+
+if ($path === '/admin/site-map') {
+    admin_render('directory_entries', [
+        'entries' => $repo->siteDirectoryEntries('sitemap', false),
+        'type' => 'sitemap',
+        'title' => '車種別サイトマップ管理',
+    ]);
+    return;
+}
+
+if ($path === '/admin/site-map-edit') {
+    $id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
+    $entry = $id > 0 ? $repo->siteDirectoryEntryById($id, 'sitemap') : null;
+    if (is_post()) {
+        verify_csrf();
+        $entryId = $repo->saveSiteDirectoryEntry([
+            'id' => $id ?: null,
+            'directory_type' => 'sitemap',
+            'group_name' => trim((string)($_POST['group_name'] ?? '')),
+            'title' => trim((string)($_POST['title'] ?? '')),
+            'detail' => trim((string)($_POST['detail'] ?? '')),
+            'product_slug' => trim((string)($_POST['product_slug'] ?? '')),
+            'sort_order' => (int)($_POST['sort_order'] ?? 100),
+            'is_active' => isset($_POST['is_active']) ? 1 : 0,
+        ]);
+        redirect_to('/admin/site-map-edit?id=' . $entryId . '&saved=1');
+    }
+    admin_render('directory_entry_edit', [
+        'entry' => $entry,
+        'type' => 'sitemap',
+        'saved' => isset($_GET['saved']),
+        'title' => $entry ? 'サイトマップ項目編集' : 'サイトマップ項目追加',
+    ]);
+    return;
+}
+
+if ($path === '/admin/site-map-delete') {
+    if (is_post()) {
+        verify_csrf();
+        $repo->deleteSiteDirectoryEntry((int)($_POST['id'] ?? 0), 'sitemap');
+    }
+    redirect_to('/admin/site-map?deleted=1');
+}
+
 if ($path === '/admin/page-edit') {
     $id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
     $page = $id > 0 ? $repo->pageById($id) : null;
